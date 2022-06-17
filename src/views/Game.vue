@@ -96,6 +96,7 @@
           <div v-if="opponentHand[9].revealed" @click="chosenPlayableCard=opponentHand[9]" style="width: 15vh; height: 10vh; position: absolute; bottom: 0px; left: 60vh"></div>
       </div>
     </div> <!-- Opponent Hand --->
+    <div v-if="opponentPassed && gameResult==''" style="position: absolute; left: 32%; top: 25%; font-size: 8vh;">Opponent has passed</div>>
     <div style="position: absolute; top: 37%; left: 10%; height: 13vh; width: 80%;">
       <div @click="chosenCard=opponentBoard[0]" v-if="opponentBoard[0].cardName" style="width: 10%; height: 100%; position: absolute; background-color: white;">
           <span class="circle" style="position: absolute; left: 5px; top: 5px; text-align: center"><div style="position: absolute; top: 5px; left: 10px; font-size: 1.75vh">{{ opponentBoard[0].cardHealth }}</div></span>
@@ -227,10 +228,15 @@
       <hr v-if="opponentBoard[7].cardName && opponentBoard[8].cardName" class="vertical" style="position: absolute; left: 79%; height: 100%">
       <hr v-if="opponentBoard[8].cardName && opponentBoard[9].cardName" class="vertical" style="position: absolute; left: 89%; height: 100%">
     </div> <!-- Opponent Board --->
+    <span v-if="opponentWon" class="circle" style="position: absolute; height: 6vh; width: 6vh; left: 2%; top: 24%; background-color: red"></span>
+    <span v-if="opponentWonRound" class="circle" style="position: absolute; height: 6vh; width: 6vh; left: 2%; top: 32%; background-color: red;"></span>
     <div style="left: 15px; width: 11vh; height:10vh; border:3px solid #000; top: 41%; position: absolute"><h1 style="font-size: 9vh">{{ opponentScore }}</h1></div>
     <b-button v-if="showStartGame" @click="startGame()" variant="danger" style="position: absolute; top: 45%; left: 45%">Start Game</b-button>
+    <div v-if="gameResult!=''" style="position: absolute; top: 40%; left: 30%; width: 40%; height: 20%; border: 5px solid black; padding: 5px; font-Size: 8vh; background-color: white;">{{ gameResult }}</div>
     <hr style="position: absolute; top: 49%; width: 99.5%; border: 3px solid">
     <div style="left: 15px; width: 11vh; height:10vh; border:3px solid #000; top: 51%; position: absolute"><h1 style="font-size: 9vh">{{ playerScore }}</h1></div>
+    <span v-if="playerWonRound" class="circle" style="position: absolute; height: 6vh; width: 6vh; left: 2%; top: 64%; background-color: blue"></span>
+    <span v-if="playerWon" class="circle" style="position: absolute; height: 6vh; width: 6vh; left: 2%; top: 72%; background-color: blue;"></span>
     <div style="position: absolute; top: 51%; left: 10%; height: 13vh; width: 80%;">
       <div @click="chosenCard=playerBoard[0]" v-if="playerBoard[0].cardName" style="width: 10%; height: 100%; position: absolute; background-color: white;">
           <span class="circle" style="position: absolute; left: 5px; top: 5px; text-align: center"><div style="position: absolute; top: 5px; left: 10px; font-size: 1.75vh">{{ playerBoard[0].cardHealth }}</div></span>
@@ -376,6 +382,7 @@
       <hr v-if="playerBoard[7].cardName && playerBoard[8].cardName" class="vertical" style="position: absolute; left: 79%; height: 100%">
       <hr v-if="playerBoard[8].cardName && playerBoard[9].cardName" class="vertical" style="position: absolute; left: 89%; height: 100%">
     </div> <!-- Player Board --->
+    <div v-if="playerPassed && gameResult==''" style="position: absolute; left: 32%; bottom: 25%; font-size: 8vh;">You have passed</div>>
     <div style="position: absolute; left: 20%; bottom: 1%; background-color: gray; width: 75vh; height: 20vh">
       <div v-if="playerHand[0].cardName" style="background-color: white; width: 15vh; height: 10vh; position: absolute; top: 0px">
           <span class="circle" style="position: absolute; left: 5px; top: 5px; text-align: center"><div style="position: absolute; top: 5px; left: 10px; font-size: 1.75vh">{{ playerHand[0].cardBaseHealth }}</div></span>
@@ -447,7 +454,7 @@
           <div v-if="playerHand[9].cardRarity=='Silver'" style="position: absolute; background-color: #a6a6a6; width: 2vh; height: 2vh; right: 10px"></div>
           <div v-if="playerHand[9].cardRarity=='Gold'" style="position: absolute; background-color: #e6b800; width: 2vh; height: 2vh; right: 10px"></div>
       </div>
-      <div v-if="chosenCardPlayedCard!='Any Card From Own Deck' && isEnemyTurn==false && showTutoredCard==false && chosenCardTarget!='Manual'">
+      <div v-if="chosenCardPlayedCard!='Any Card From Own Deck' && !isEnemyTurn && !showTutoredCard && chosenCardTarget!='Manual' && !playerPlayed">
         <div @click="chosenCard=playerHand[0]; chosenPlayableCard=playerHand[0]; chosenPlayableCardIndex=0" v-if="playerHand[0].cardName" style="width: 15vh; height: 10vh; position: absolute; top: 0px"></div>
         <div @click="chosenCard=playerHand[1]; chosenPlayableCard=playerHand[1]; chosenPlayableCardIndex=1" v-if="playerHand[1].cardName" style="width: 15vh; height: 10vh; position: absolute; bottom: 0px"></div>
         <div @click="chosenCard=playerHand[2]; chosenPlayableCard=playerHand[2]; chosenPlayableCardIndex=2" v-if="playerHand[2].cardName" style="width: 15vh; height: 10vh; position: absolute; left: 15vh; top: 0px"></div>
@@ -779,11 +786,20 @@
 
 <script lang="ts">
 import decks from "@/assets/decks.ts"
-export default {
+export default{
   data() {
       return {
           opponentScore: 0,
           playerScore: 0,
+          opponentWonRound: false,
+          playerWonRound: false,
+          opponentWon: false,
+          playerWon: false,
+          opponentPassed: false,
+          playerPassed: false,
+          playerPlayed: false,
+          playerStarts: false,
+          gameResult: "",
           opponentBoard: [{}, {}, {}, {}, {}, {}, {}, {}, {}, {}],
           playerBoard: [{}, {}, {}, {}, {}, {}, {}, {}, {}, {}],
           opponentHand:  [{}, {}, {}, {}, {}, {}, {}, {}, {}, {}],
@@ -796,7 +812,6 @@ export default {
           showStartGame: true,
           isEnemyTurn: false,
           cardPlayed: false,
-          playerPassed: false,
           showDeck: false,
           showPlayerGraveyard: false,
           showOpponentGraveyard: false,
@@ -1907,7 +1922,7 @@ export default {
                   this.checkDeath();
               }
           }
-
+          this.playerPlayed = true;
           console.log(this.chosenCardTargetType)
       },
       processDeploy(i){
@@ -2132,27 +2147,33 @@ export default {
                 this.checkDeath();
       },
       startEnemyTurn(){
-          this.isEnemyTurn=true
-          this.checkDeath()
-          this.countPoints()
+          if(!this.opponentPassed){this.isEnemyTurn=true}
+          this.checkDeath();
+          this.countPoints();
           setTimeout(() => {
-            this.playEnemyCard()
-            this.checkDeath()
-            this.processEnemyEngines()
-            this.processEnemyStatus()
+            this.checkRoundEnd();
+            if(!this.opponentPassed){this.playEnemyCard();}
+            else{this.playerPlayed=false}
+            this.checkDeath();
+            this.processEnemyEngines();
+            this.processEnemyStatus();
             this.checkDeath();
             this.countPoints();
+            this.checkRoundEnd();
             if(!this.playerPassed){this.isEnemyTurn=false}
             else{this.startEnemyTurn()}
         }, 2000)
       },
       playEnemyCard(){
+          let shouldPass = false
+          if(!this.playerWonRound && ((this.opponentScore >= this.playerScore + 10) || ((this.opponentScore + 15 <= this.playerScore) && (this.filledOpponentBoardSpace.length>3)))){shouldPass = true}
+          if(this.playerPassed && this.playerScore < this.opponentScore){this.opponentPassed=true; return "aaa"}
           if(this.chosenEnemyPlayableCard==null){
             let handI = []
             for(let i = 0; i<10; i++){
                 if(this.opponentHand[i].cardName){handI.push(i)}
             }
-            if(handI.length==0){return "aaa"
+            if(handI.length==0 || shouldPass){this.opponentPassed=true; return "aaa"
             } else {this.chosenEnemyPlayableCardIndex = this.chooseEnemyCard(handI)}
             if(this.chosenEnemyPlayableCardIndex==undefined){this.chosenEnemyPlayableCardIndex=handI[Math.floor(Math.random()*handI.length)] }
             this.chosenEnemyPlayableCard = this.opponentHand[this.chosenEnemyPlayableCardIndex]
@@ -2166,7 +2187,7 @@ export default {
         let boardI = null
         let noSpace = false 
         if(availableSpace.length!=0) {boardI = this.chooseEnemyCardPosition(availableSpace)
-        } else {noSpace = true; this.discardEnemyCard()}
+        } else {noSpace = true; this.opponentPassed=true}
         if(noSpace==false){
           this.chosenEnemyCardEffect = this.chosenEnemyPlayableCard.cardEffect
           this.chosenEnemyCardEffectCondition = this.chosenEnemyPlayableCard.cardEffectCondition
@@ -3149,7 +3170,9 @@ export default {
                   this.chosenEnemyCardEngineEffect = ""
               }
           }
-      }},
+          this.playerPlayed = false;
+      }
+      },
       chooseEnemyCard(handI){
           let controlCards = []
           let supportCards = []
@@ -3492,6 +3515,7 @@ export default {
                   }
               }
         } 
+          console.log(this.filledOpponentBoardSpace)
           if(oppPositiveI==null){oppPositiveI=this.filledOpponentBoardSpace[Math.floor(Math.random()*this.filledOpponentBoardSpace.length)]}
           if(oppNegativeI==null){oppNegativeI=this.filledOpponentBoardSpace[Math.floor(Math.random()*this.filledOpponentBoardSpace.length)]}
           if(playerPositiveI==null){playerPositiveI=this.filledBoardSpace[Math.floor(Math.random()*this.filledBoardSpace.length)]}
@@ -4424,8 +4448,163 @@ export default {
         this.chosenEnemyPlayableCard={};
         this.showTutoredCard=false
       },
+      checkRoundEnd(){
+          if(this.playerPassed && this.opponentPassed){
+              if(this.playerScore > this.opponentScore){
+                  if(this.playerWonRound==true){this.playerWon=true}
+                  else{this.playerWonRound=true; this.playerStarts=true}
+              }
+              else if(this.playerScore < this.opponentScore){
+                  if(this.opponentWonRound==true){this.opponentWon=true}
+                  else{this.opponentWonRound=true; this.playerStarts=false}
+              }
+              else {
+                  if(this.playerWonRound==true){this.playerWon=true}
+                  else{this.playerWonRound=true; this.playerStarts=true}
+                  if(this.opponentWonRound==true){this.opponentWon=true}
+                  else{this.opponentWonRound=true}
+              }
+              if(!this.playerWon && !this.opponentWon){this.startNewRound()}
+              else{  
+                if(this.playerWon && this.opponentWon){this.gameResult="Draw"}
+                else if(this.playerWon){this.gameResult="Victory"}
+                else if(this.opponentWon){this.gameResult="Defeat"}
+                else{console.log("abra kadabra")}
+          }}
+      },
+      startNewRound(){
+          this.playerPassed = false;
+          this.opponentPassed = false;
+          this.playerPlayed = false;
+          for(let i = 0; i < this.filledBoardSpace.length; i++){
+              this.playerGraveyard.push(this.playerBoard[this.filledBoardSpace[i]])
+          }
+          this.filledBoardSpace = [];
+          this.playerBoard = [{}, {}, {}, {}, {}, {}, {}, {}, {}, {}];
+          this.playerScore = 0;
+          let emptyHandSpots = [];
+          for(let i = 0; i < 10; i++){
+              if(this.playerHand[i].cardName!=true){emptyHandSpots.push(i)}
+          }
+          console.log(emptyHandSpots)
+          for(let i = 0; i < 2; i++){
+              if(emptyHandSpots.length){  
+                let drawnCard = this.playerDeck.shift()
+                drawnCard.revealed1 = false
+                drawnCard.revealed2 = false
+                drawnCard.revealed3 = false
+                drawnCard.revealed4 = false
+                if(drawnCard.revealedCount){drawnCard.revealedCount++}
+                else{drawnCard.revealedCount=1}
+                let chosenRevealed = null
+                if(drawnCard.revealedCount==1){chosenRevealed=drawnCard.revealed1}
+                else if(drawnCard.revealedCount==2){chosenRevealed=drawnCard.revealed2}
+                else if(drawnCard.revealedCount==3){chosenRevealed=drawnCard.revealed3}
+                else {chosenRevealed=drawnCard.revealed4}
+                if(this.playerDeck.length){  
+                    this.playerHand[emptyHandSpots[0]] = {
+                        cardName: drawnCard.cardName,
+                        cardBaseHealth: drawnCard.cardBaseHealth,
+                        cardEffect: drawnCard.cardEffect,
+                        cardEffectCondition: drawnCard.cardEffectCondition,
+                        cardEffectTarget: drawnCard.cardEffectTarget,
+                        cardStatus: drawnCard.cardStatus,
+                        cardStatus2: drawnCard.cardStatus2,
+                        cardStatusDuration: drawnCard.cardStatusDuration,
+                        cardStatusDuration2: drawnCard.cardStatusDuration2,
+                        cardTargetUnitType: drawnCard.cardTargetUnitType,
+                        cardTargetUnitType2: drawnCard.cardTargetUnitType2,
+                        cardEffectValue: drawnCard.cardEffectValue,
+                        cardEffect2: drawnCard.cardEffect2,
+                        cardEffectTarget2: drawnCard.cardEffectTarget2,
+                        cardEffectValue2: drawnCard.cardEffectValue2,
+                        cardEngineType: drawnCard.cardEngineType,
+                        cardEngineTarget: drawnCard.cardEngineTarget,
+                        cardEngineValue: drawnCard.cardEngineValue,
+                        cardEngineCondition: drawnCard.cardEngineCondition,
+                        cardEngineType2: drawnCard.cardEngineType2,
+                        cardEngineTarget2: drawnCard.cardEngineTarget2,
+                        cardEngineValue2: drawnCard.cardEngineValue2,
+                        cardEngineCondition2: drawnCard.cardEngineCondition2,
+                        cardRandomness1: drawnCard.cardRandomness1,
+                        cardRandomness2: drawnCard.cardRandomness2,
+                        cardRemovalCondition: drawnCard.cardRemovalCondition,
+                        cardRemovalConditionValue: drawnCard.cardRemovalConditionValue,
+                        playedCard: drawnCard.playedCard,
+                        consumeType: drawnCard.consumeType,
+                        cardRarity: drawnCard.cardRarity,
+                        cardDescription: drawnCard.cardDescription,
+                        revealed: chosenRevealed,
+                }}
+                emptyHandSpots.shift();
+          }}
+          for(let i = 0; i < this.filledOpponentBoardSpace.length; i++){
+              this.opponentGraveyard.push(this.opponentBoard[this.filledOpponentBoardSpace[i]])
+          }
+          this.isEnemyTurn = false;
+          this.filledOpponentBoardSpace = [];
+          this.opponentBoard = [{}, {}, {}, {}, {}, {}, {}, {}, {}, {}];
+          this.opponentScore = 0;
+          let emptyOpponentHandSpots = [];
+          for(let i = 0; i < 10; i++){
+              if(this.opponentHand[i].cardName==undefined){emptyOpponentHandSpots.push(i)}
+          }
+          for(let i = 0; i < 2; i++){
+              if(emptyOpponentHandSpots.length){  
+                let drawnCard = this.playerDeck.shift()
+                drawnCard.revealed1 = false
+                drawnCard.revealed2 = false
+                drawnCard.revealed3 = false
+                drawnCard.revealed4 = false
+                if(drawnCard.revealedCount){drawnCard.revealedCount++}
+                else{drawnCard.revealedCount=1}
+                let chosenRevealed = null
+                if(drawnCard.revealedCount==1){chosenRevealed=drawnCard.revealed1}
+                else if(drawnCard.revealedCount==2){chosenRevealed=drawnCard.revealed2}
+                else if(drawnCard.revealedCount==3){chosenRevealed=drawnCard.revealed3}
+                else {chosenRevealed=drawnCard.revealed4}
+                if(this.opponentDeck.length){  
+                    this.opponentHand[emptyOpponentHandSpots[0]] = {
+                        cardName: drawnCard.cardName,
+                        cardBaseHealth: drawnCard.cardBaseHealth,
+                        cardEffect: drawnCard.cardEffect,
+                        cardEffectCondition: drawnCard.cardEffectCondition,
+                        cardEffectTarget: drawnCard.cardEffectTarget,
+                        cardStatus: drawnCard.cardStatus,
+                        cardStatus2: drawnCard.cardStatus2,
+                        cardStatusDuration: drawnCard.cardStatusDuration,
+                        cardStatusDuration2: drawnCard.cardStatusDuration2,
+                        cardTargetUnitType: drawnCard.cardTargetUnitType,
+                        cardTargetUnitType2: drawnCard.cardTargetUnitType2,
+                        cardEffectValue: drawnCard.cardEffectValue,
+                        cardEffect2: drawnCard.cardEffect2,
+                        cardEffectTarget2: drawnCard.cardEffectTarget2,
+                        cardEffectValue2: drawnCard.cardEffectValue2,
+                        cardEngineType: drawnCard.cardEngineType,
+                        cardEngineTarget: drawnCard.cardEngineTarget,
+                        cardEngineValue: drawnCard.cardEngineValue,
+                        cardEngineCondition: drawnCard.cardEngineCondition,
+                        cardEngineType2: drawnCard.cardEngineType2,
+                        cardEngineTarget2: drawnCard.cardEngineTarget2,
+                        cardEngineValue2: drawnCard.cardEngineValue2,
+                        cardEngineCondition2: drawnCard.cardEngineCondition2,
+                        cardRandomness1: drawnCard.cardRandomness1,
+                        cardRandomness2: drawnCard.cardRandomness2,
+                        cardRemovalCondition: drawnCard.cardRemovalCondition,
+                        cardRemovalConditionValue: drawnCard.cardRemovalConditionValue,
+                        playedCard: drawnCard.playedCard,
+                        consumeType: drawnCard.consumeType,
+                        cardRarity: drawnCard.cardRarity,
+                        cardDescription: drawnCard.cardDescription,
+                        revealed: chosenRevealed,
+                }}
+                emptyOpponentHandSpots.shift();
+          }}
+          if(!this.playerStarts){this.isEnemyTurn = true; this.startEnemyTurn()}
+      },
   }
 }
+// player can play cards in r2, game end card
 </script>
 
 <style>
