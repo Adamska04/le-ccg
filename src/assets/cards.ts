@@ -58,10 +58,10 @@ export default [
         cardEffect: "Engine",
         cardEngineType: "Boost",
         cardEngineTarget: "Self",
-        cardEngineCondition: "Alone",
+        cardEngineCondition: "Outnumbered",
         cardEngineValue: 2,
         cardRarity: "Bronze",
-        get cardDescription() {return `At the end of every allied turn boosts self by ${this.cardEngineValue} if there are no allied units.`}
+        get cardDescription() {return `At the end of every allied turn boosts self by ${this.cardEngineValue} if you control less allied units.`}
     },
     {
         cardName: "Info Broker",
@@ -356,7 +356,7 @@ export default [
         cardEffect: "Engine",
         cardEngineType: "Removal",
         cardEngineTarget: "Lowest Health Enemy",
-        cardEngineCondition: "Enemy Has More Units",
+        cardEngineCondition: "Outnumbered",
         cardRarity: "Gold",
         get cardDescription() {return `At the end of each allied turn if the opponent has more units than you, destroys the enemy unit with the lowest health.`}
     },
