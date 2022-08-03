@@ -1,6 +1,6 @@
 <template>
   <div style="height: 100vh">
-    <div style="position: absolute; left: 20%; top: 1%; background-color: gray; width: 75vh; height: 20vh">
+    <div v-if="!isRedrawPhase" style="position: absolute; left: 20%; top: 1%; background-color: gray; width: 75vh; height: 20vh">
       <div @click="chosenCard=opponentBoard[0]" v-if="opponentHand[0].cardName && opponentHand[0].revealed" style="background-color: white; width: 15vh; height: 10vh; position: absolute; top: 0px">
           <span class="circle" style="position: absolute; left: 5px; top: 5px; text-align: center"><div style="position: absolute; top: 5px; left: 10px; font-size: 1.75vh">{{ opponentHand[0].cardBaseHealth }}</div></span>
           <h1 style="position: absolute; top: 4vh; left: 2vh; font-size: 2vh">{{ opponentHand[0].cardName }}</h1>
@@ -96,7 +96,7 @@
           <div v-if="opponentHand[9].revealed" @click="chosenPlayableCard=opponentHand[9]" style="width: 15vh; height: 10vh; position: absolute; bottom: 0px; left: 60vh"></div>
       </div>
     </div> <!-- Opponent Hand --->
-    <div v-if="opponentPassed && gameResult==''" style="position: absolute; left: 32%; top: 25%; font-size: 8vh;">Opponent has passed</div>>
+    <div v-if="opponentPassed && gameResult==''" style="position: absolute; left: 32%; top: 25%; font-size: 8vh;">Opponent has passed</div>
     <div style="position: absolute; top: 37%; left: 10%; height: 13vh; width: 80%;">
       <div @click="chosenCard=opponentBoard[0]" v-if="opponentBoard[0].cardName" style="width: 10%; height: 100%; position: absolute; background-color: white;">
           <span class="circle" style="position: absolute; left: 5px; top: 5px; text-align: center"><div style="position: absolute; top: 5px; left: 10px; font-size: 1.75vh">{{ opponentBoard[0].cardHealth }}</div></span>
@@ -232,11 +232,114 @@
     <span v-if="opponentWonRound" class="circle" style="position: absolute; height: 6vh; width: 6vh; left: 2%; top: 32%; background-color: red;"></span>
     <div style="left: 15px; width: 11vh; height:10vh; border:3px solid #000; top: 41%; position: absolute"><h1 style="font-size: 9vh">{{ opponentScore }}</h1></div>
     <b-button v-if="showStartGame" @click="startGame()" variant="danger" style="position: absolute; top: 45%; left: 45%">Start Game</b-button>
-    <div v-if="gameResult!=''" style="position: absolute; top: 40%; left: 30%; width: 40%; height: 20%; border: 5px solid black; padding: 5px; font-Size: 8vh; background-color: white;">{{ gameResult }}</div>
+    <div v-if="gameResult!=''" style="position: absolute; top: 40%; left: 30%; width: 40%; height: 20%; border: 5px solid black; padding: 5px; font-Size: 9vh; background-color: white; z-index: 2">{{ gameResult }}</div>
     <hr style="position: absolute; top: 49%; width: 99.5%; border: 3px solid">
     <div style="left: 15px; width: 11vh; height:10vh; border:3px solid #000; top: 51%; position: absolute"><h1 style="font-size: 9vh">{{ playerScore }}</h1></div>
     <span v-if="playerWonRound" class="circle" style="position: absolute; height: 6vh; width: 6vh; left: 2%; top: 64%; background-color: blue"></span>
     <span v-if="playerWon" class="circle" style="position: absolute; height: 6vh; width: 6vh; left: 2%; top: 72%; background-color: blue;"></span>
+    <div v-if="isRedrawPhase" style="position: absolute; left: 20%; bottom: 36.5%; background-color: gray; width: 100vh; height: 26vh; z-index: 2">
+      <div v-if="playerHand[0].cardName" style="background-color: white; width: 20vh; height: 13vh; position: absolute; top: 0px">
+          <span class="circle" style="position: absolute; left: 5px; top: 5px; text-align: center"><div style="position: absolute; top: 5px; left: 10px; font-size: 1.75vh">{{ playerHand[0].cardBaseHealth }}</div></span>
+          <h1 style="position: absolute; top: 4vh; left: 2vh; font-size: 2vh">{{ playerHand[0].cardName }}</h1>
+          <div v-if="playerHand[0].cardRarity=='Bronze'" style="position: absolute; background-color: #cc6600; width: 2vh; height: 2vh; right: 10px"></div>
+          <div v-if="playerHand[0].cardRarity=='Silver'" style="position: absolute; background-color: #a6a6a6; width: 2vh; height: 2vh; right: 10px"></div>
+          <div v-if="playerHand[0].cardRarity=='Gold'" style="position: absolute; background-color: #e6b800; width: 2vh; height: 2vh; right: 10px"></div>
+      </div>
+      <div v-if="playerHand[1].cardName" style="background-color: white; width: 20vh; height: 13vh; position: absolute; bottom: 0px">
+          <span class="circle" style="position: absolute; left: 5px; top: 5px; text-align: center"><div style="position: absolute; top: 5px; left: 10px; font-size: 1.75vh">{{ playerHand[1].cardBaseHealth }}</div></span>
+          <h1 style="position: absolute; top: 4vh; left: 2vh; font-size: 2vh">{{ playerHand[1].cardName }}</h1>
+          <div v-if="playerHand[1].cardRarity=='Bronze'" style="position: absolute; background-color: #cc6600; width: 2vh; height: 2vh; right: 10px"></div>
+          <div v-if="playerHand[1].cardRarity=='Silver'" style="position: absolute; background-color: #a6a6a6; width: 2vh; height: 2vh; right: 10px"></div>
+          <div v-if="playerHand[1].cardRarity=='Gold'" style="position: absolute; background-color: #e6b800; width: 2vh; height: 2vh; right: 10px"></div>
+      </div>
+      <div v-if="playerHand[2].cardName" style="background-color: white; width: 20vh; height: 13vh; position: absolute; left: 20vh; top: 0px">
+          <span class="circle" style="position: absolute; left: 5px; top: 5px; text-align: center"><div style="position: absolute; top: 5px; left: 10px; font-size: 1.75vh">{{ playerHand[2].cardBaseHealth }}</div></span>
+          <h1 style="position: absolute; top: 4vh; left: 2vh; font-size: 2vh">{{ playerHand[2].cardName }}</h1>
+          <div v-if="playerHand[2].cardRarity=='Bronze'" style="position: absolute; background-color: #cc6600; width: 2vh; height: 2vh; right: 10px"></div>
+          <div v-if="playerHand[2].cardRarity=='Silver'" style="position: absolute; background-color: #a6a6a6; width: 2vh; height: 2vh; right: 10px"></div>
+          <div v-if="playerHand[2].cardRarity=='Gold'" style="position: absolute; background-color: #e6b800; width: 2vh; height: 2vh; right: 10px"></div>
+      </div>
+      <div v-if="playerHand[3].cardName" style="background-color: white; width: 20vh; height: 13vh; position: absolute; left: 20vh; bottom: 0px">
+          <span class="circle" style="position: absolute; left: 5px; top: 5px; text-align: center"><div style="position: absolute; top: 5px; left: 10px; font-size: 1.75vh">{{ playerHand[3].cardBaseHealth }}</div></span>
+          <h1 style="position: absolute; top: 4vh; left: 2vh; font-size: 2vh">{{ playerHand[3].cardName }}</h1>
+          <div v-if="playerHand[3].cardRarity=='Bronze'" style="position: absolute; background-color: #cc6600; width: 2vh; height: 2vh; right: 10px"></div>
+          <div v-if="playerHand[3].cardRarity=='Silver'" style="position: absolute; background-color: #a6a6a6; width: 2vh; height: 2vh; right: 10px"></div>
+          <div v-if="playerHand[3].cardRarity=='Gold'" style="position: absolute; background-color: #e6b800; width: 2vh; height: 2vh; right: 10px"></div>
+      </div>
+      <div v-if="playerHand[4].cardName" style="background-color: white; width: 20vh; height: 13vh; position: absolute; left: 40vh; top: 0px">
+          <span class="circle" style="position: absolute; left: 5px; top: 5px; text-align: center"><div style="position: absolute; top: 5px; left: 10px; font-size: 1.75vh">{{ playerHand[4].cardBaseHealth }}</div></span>
+          <h1 style="position: absolute; top: 4vh; left: 2vh; font-size: 2vh">{{ playerHand[4].cardName }}</h1>
+          <div v-if="playerHand[4].cardRarity=='Bronze'" style="position: absolute; background-color: #cc6600; width: 2vh; height: 2vh; right: 10px"></div>
+          <div v-if="playerHand[4].cardRarity=='Silver'" style="position: absolute; background-color: #a6a6a6; width: 2vh; height: 2vh; right: 10px"></div>
+          <div v-if="playerHand[4].cardRarity=='Gold'" style="position: absolute; background-color: #e6b800; width: 2vh; height: 2vh; right: 10px"></div>
+      </div>
+      <div v-if="playerHand[5].cardName" style="background-color: white; width: 20vh; height: 13vh; position: absolute; left: 40vh; bottom: 0px">
+          <span class="circle" style="position: absolute; left: 5px; top: 5px; text-align: center"><div style="position: absolute; top: 5px; left: 10px; font-size: 1.75vh">{{ playerHand[5].cardBaseHealth }}</div></span>
+          <h1 style="position: absolute; top: 4vh; left: 2vh; font-size: 2vh">{{ playerHand[5].cardName }}</h1>
+          <div v-if="playerHand[5].cardRarity=='Bronze'" style="position: absolute; background-color: #cc6600; width: 2vh; height: 2vh; right: 10px"></div>
+          <div v-if="playerHand[5].cardRarity=='Silver'" style="position: absolute; background-color: #a6a6a6; width: 2vh; height: 2vh; right: 10px"></div>
+          <div v-if="playerHand[5].cardRarity=='Gold'" style="position: absolute; background-color: #e6b800; width: 2vh; height: 2vh; right: 10px"></div>
+      </div>
+      <div v-if="playerHand[6].cardName" style="background-color: white; width: 20vh; height: 13vh; position: absolute; left: 60vh; top: 0px">
+          <span class="circle" style="position: absolute; left: 5px; top: 5px; text-align: center"><div style="position: absolute; top: 5px; left: 10px; font-size: 1.75vh">{{ playerHand[6].cardBaseHealth }}</div></span>
+          <h1 style="position: absolute; top: 4vh; left: 2vh; font-size: 2vh">{{ playerHand[6].cardName }}</h1>
+          <div v-if="playerHand[6].cardRarity=='Bronze'" style="position: absolute; background-color: #cc6600; width: 2vh; height: 2vh; right: 10px"></div>
+          <div v-if="playerHand[6].cardRarity=='Silver'" style="position: absolute; background-color: #a6a6a6; width: 2vh; height: 2vh; right: 10px"></div>
+          <div v-if="playerHand[6].cardRarity=='Gold'" style="position: absolute; background-color: #e6b800; width: 2vh; height: 2vh; right: 10px"></div>
+      </div>
+      <div v-if="playerHand[7].cardName" style="background-color: white; width: 20vh; height: 13vh; position: absolute; left: 60vh; bottom: 0px">
+          <span class="circle" style="position: absolute; left: 5px; top: 5px; text-align: center"><div style="position: absolute; top: 5px; left: 10px; font-size: 1.75vh">{{ playerHand[7].cardBaseHealth }}</div></span>
+          <h1 style="position: absolute; top: 4vh; left: 2vh; font-size: 2vh">{{ playerHand[7].cardName }}</h1>
+          <div v-if="playerHand[7].cardRarity=='Bronze'" style="position: absolute; background-color: #cc6600; width: 2vh; height: 2vh; right: 10px"></div>
+          <div v-if="playerHand[7].cardRarity=='Silver'" style="position: absolute; background-color: #a6a6a6; width: 2vh; height: 2vh; right: 10px"></div>
+          <div v-if="playerHand[7].cardRarity=='Gold'" style="position: absolute; background-color: #e6b800; width: 2vh; height: 2vh; right: 10px"></div>
+      </div>
+      <div v-if="playerHand[8].cardName" style="background-color: white; width: 20vh; height: 13vh; position: absolute; left: 80vh; top: 0px">
+          <span class="circle" style="position: absolute; left: 5px; top: 5px; text-align: center"><div style="position: absolute; top: 5px; left: 10px; font-size: 1.75vh">{{ playerHand[8].cardBaseHealth }}</div></span>
+          <h1 style="position: absolute; top: 4vh; left: 2vh; font-size: 2vh">{{ playerHand[8].cardName }}</h1>
+          <div v-if="playerHand[8].cardRarity=='Bronze'" style="position: absolute; background-color: #cc6600; width: 2vh; height: 2vh; right: 10px"></div>
+          <div v-if="playerHand[8].cardRarity=='Silver'" style="position: absolute; background-color: #a6a6a6; width: 2vh; height: 2vh; right: 10px"></div>
+          <div v-if="playerHand[8].cardRarity=='Gold'" style="position: absolute; background-color: #e6b800; width: 2vh; height: 2vh; right: 10px"></div>
+      </div>
+      <div v-if="playerHand[9].cardName" style="background-color: white; width: 20vh; height: 13vh; position: absolute; left: 80vh; bottom: 0px">
+          <span class="circle" style="position: absolute; left: 5px; top: 5px; text-align: center"><div style="position: absolute; top: 5px; left: 10px; font-size: 1.75vh">{{ playerHand[9].cardBaseHealth }}</div></span>
+          <h1 style="position: absolute; top: 4vh; left: 2vh; font-size: 2vh">{{ playerHand[9].cardName }}</h1>
+          <div v-if="playerHand[9].cardRarity=='Bronze'" style="position: absolute; background-color: #cc6600; width: 2vh; height: 2vh; right: 10px"></div>
+          <div v-if="playerHand[9].cardRarity=='Silver'" style="position: absolute; background-color: #a6a6a6; width: 2vh; height: 2vh; right: 10px"></div>
+          <div v-if="playerHand[9].cardRarity=='Gold'" style="position: absolute; background-color: #e6b800; width: 2vh; height: 2vh; right: 10px"></div>
+      </div>
+      <h1 style="position: absolute; bottom: 105%">Redraw phase: Click to inspect a card, double click to select a card to be replaced, double click again on that card to cancel selection. {{ 2-redrawnCards.length }} redraws left.</h1>
+      <div v-if="redrawnCards.length<2">
+        <div @click="chosenCard=playerHand[0]" @dblclick="redrawnCards.push(0)" v-if="playerHand[0].cardName && !redrawnCards.includes(0)" style="width: 20vh; height: 13vh; position: absolute; top: 0px"></div>
+        <div @click="chosenCard=playerHand[1]" @dblclick="redrawnCards.push(1)" v-if="playerHand[1].cardName && !redrawnCards.includes(1)" style="width: 20vh; height: 13vh; position: absolute; bottom: 0px"></div>
+        <div @click="chosenCard=playerHand[2]" @dblclick="redrawnCards.push(2)" v-if="playerHand[2].cardName && !redrawnCards.includes(2)" style="width: 20vh; height: 13vh; position: absolute; left: 20vh; top: 0px"></div>
+        <div @click="chosenCard=playerHand[3]" @dblclick="redrawnCards.push(3)" v-if="playerHand[3].cardName && !redrawnCards.includes(3)" style="width: 20vh; height: 13vh; position: absolute; left: 20vh; bottom: 0px"></div>
+        <div @click="chosenCard=playerHand[4]" @dblclick="redrawnCards.push(4)" v-if="playerHand[4].cardName && !redrawnCards.includes(4)" style="width: 20vh; height: 13vh; position: absolute; left: 40vh; top: 0px"></div>
+        <div @click="chosenCard=playerHand[5]" @dblclick="redrawnCards.push(5)" v-if="playerHand[5].cardName && !redrawnCards.includes(5)" style="width: 20vh; height: 13vh; position: absolute; left: 40vh; bottom: 0px"></div>
+        <div @click="chosenCard=playerHand[6]" @dblclick="redrawnCards.push(6)" v-if="playerHand[6].cardName && !redrawnCards.includes(6)" style="width: 20vh; height: 13vh; position: absolute; left: 60vh; top: 0px"></div>
+        <div @click="chosenCard=playerHand[7]" @dblclick="redrawnCards.push(7)" v-if="playerHand[7].cardName && !redrawnCards.includes(7)" style="width: 20vh; height: 13vh; position: absolute; left: 60vh; bottom: 0px"></div>
+        <div @click="chosenCard=playerHand[8]" @dblclick="redrawnCards.push(8)" v-if="playerHand[8].cardName && !redrawnCards.includes(8)" style="width: 20vh; height: 13vh; position: absolute; left: 80vh; top: 0px"></div>
+        <div @click="chosenCard=playerHand[9]" @dblclick="redrawnCards.push(9)" v-if="playerHand[9].cardName && !redrawnCards.includes(9)" style="width: 20vh; height: 13vh; position: absolute; left: 80vh; bottom: 0px"></div>
+      </div>
+      <div>
+        <div v-if="redrawnCards.includes(0)" @click="chosenCard=playerHand[0]" @dblclick="redrawnCards.splice(redrawnCards.indexOf(0), 1)" style="border-style: solid; border-color: red; border-width: 2px; width: 20vh; height: 13vh; position: absolute; top: 0px"></div>
+        <div v-if="redrawnCards.includes(1)" @click="chosenCard=playerHand[1]" @dblclick="redrawnCards.splice(redrawnCards.indexOf(1), 1)" style="border-style: solid; border-color: red; border-width: 2px; width: 20vh; height: 13vh; position: absolute; bottom: 0px"></div>
+        <div v-if="redrawnCards.includes(2)" @click="chosenCard=playerHand[2]" @dblclick="redrawnCards.splice(redrawnCards.indexOf(2), 1)" style="border-style: solid; border-color: red; border-width: 2px; width: 20vh; height: 13vh; position: absolute; left: 20vh; top: 0px"></div>
+        <div v-if="redrawnCards.includes(3)" @click="chosenCard=playerHand[3]" @dblclick="redrawnCards.splice(redrawnCards.indexOf(3), 1)" style="border-style: solid; border-color: red; border-width: 2px; width: 20vh; height: 13vh; position: absolute; left: 20vh; bottom: 0px"></div>
+        <div v-if="redrawnCards.includes(4)" @click="chosenCard=playerHand[4]" @dblclick="redrawnCards.splice(redrawnCards.indexOf(4), 1)" style="border-style: solid; border-color: red; border-width: 2px; width: 20vh; height: 13vh; position: absolute; left: 40vh; top: 0px"></div>
+        <div v-if="redrawnCards.includes(5)" @click="chosenCard=playerHand[5]" @dblclick="redrawnCards.splice(redrawnCards.indexOf(5), 1)" style="border-style: solid; border-color: red; border-width: 2px; width: 20vh; height: 13vh; position: absolute; left: 40vh; bottom: 0px"></div>
+        <div v-if="redrawnCards.includes(6)" @click="chosenCard=playerHand[6]" @dblclick="redrawnCards.splice(redrawnCards.indexOf(6), 1)" style="border-style: solid; border-color: red; border-width: 2px; width: 20vh; height: 13vh; position: absolute; left: 60vh; top: 0px"></div>
+        <div v-if="redrawnCards.includes(7)" @click="chosenCard=playerHand[7]" @dblclick="redrawnCards.splice(redrawnCards.indexOf(7), 1)" style="border-style: solid; border-color: red; border-width: 2px; width: 20vh; height: 13vh; position: absolute; left: 60vh; bottom: 0px"></div>
+        <div v-if="redrawnCards.includes(8)" @click="chosenCard=playerHand[8]" @dblclick="redrawnCards.splice(redrawnCards.indexOf(8), 1)" style="border-style: solid; border-color: red; border-width: 2px; width: 20vh; height: 13vh; position: absolute; left: 80vh; top: 0px"></div>
+        <div v-if="redrawnCards.includes(9)" @click="chosenCard=playerHand[9]" @dblclick="redrawnCards.splice(redrawnCards.indexOf(9), 1)" style="border-style: solid; border-color: red; border-width: 2px; width: 20vh; height: 13vh; position: absolute; left: 80vh; bottom: 0px"></div>
+      </div>
+      <button style="font-size: 2vh; height: 5vh; background-color: antiquewhite; position: absolute; left: 105%; bottom: 50%" @click="confirmRedraw()">Confirm</button>
+      <hr class="vertical" style="position: absolute; left: 19.3%; height: 26vh">
+      <hr class="vertical" style="position: absolute; left: 39.3%; height: 26vh">
+      <hr class="vertical" style="position: absolute; left: 59.3%; height: 26vh">
+      <hr class="vertical" style="position: absolute; left: 79.3%; height: 26vh">
+      <hr style="position: absolute; top: 45%; width: 100%; border: 1px solid">
+    </div> <!-- Redraw Phase -->
     <div style="position: absolute; top: 51%; left: 10%; height: 13vh; width: 80%;">
       <div @click="chosenCard=playerBoard[0]" v-if="playerBoard[0].cardName" style="width: 10%; height: 100%; position: absolute; background-color: white;">
           <span class="circle" style="position: absolute; left: 5px; top: 5px; text-align: center"><div style="position: absolute; top: 5px; left: 10px; font-size: 1.75vh">{{ playerBoard[0].cardHealth }}</div></span>
@@ -348,7 +451,7 @@
           <h1 v-if="playerBoard[9].statusses[2].status=='Shield'" style="position: absolute; bottom: 1vh; left: 60%; color: #f5b916; font-size: 1.5vh">S</h1>
           <h1 v-if="playerBoard[9].statusses[3].status=='Freeze'" style="position: absolute; bottom: 1vh; left: 85%; color: #1cebe7; font-size: 1.5vh">F</h1>
       </div>
-      <div v-if="chosenPlayableCard.cardName">
+      <div v-if="chosenPlayableCard.cardName && !isRedrawPhase">
         <div v-if="playerBoard[0].cardName==null" @click="playCard(0)" style="width: 9%; height: 100%; position: absolute; background-color: #80ffff"></div>
         <div v-if="playerBoard[1].cardName==null" @click="playCard(1)" style="width: 9%; height: 100%; left: 10%; position: absolute; background-color: #80ffff"></div>
         <div v-if="playerBoard[2].cardName==null" @click="playCard(2)" style="width: 9%; height: 100%; left: 20%; position: absolute; background-color: #80ffff"></div>
@@ -382,8 +485,8 @@
       <hr v-if="playerBoard[7].cardName && playerBoard[8].cardName" class="vertical" style="position: absolute; left: 79%; height: 100%">
       <hr v-if="playerBoard[8].cardName && playerBoard[9].cardName" class="vertical" style="position: absolute; left: 89%; height: 100%">
     </div> <!-- Player Board --->
-    <div v-if="playerPassed && gameResult==''" style="position: absolute; left: 32%; bottom: 25%; font-size: 8vh;">You have passed</div>>
-    <div style="position: absolute; left: 20%; bottom: 1%; background-color: gray; width: 75vh; height: 20vh">
+    <div v-if="playerPassed && gameResult=='' && !isRedrawPhase" style="position: absolute; left: 32%; bottom: 25%; font-size: 8vh;">You have passed</div>
+    <div v-if="!isRedrawPhase" style="position: absolute; left: 20%; bottom: 1%; background-color: gray; width: 75vh; height: 20vh">
       <div v-if="playerHand[0].cardName" style="background-color: white; width: 15vh; height: 10vh; position: absolute; top: 0px">
           <span class="circle" style="position: absolute; left: 5px; top: 5px; text-align: center"><div style="position: absolute; top: 5px; left: 10px; font-size: 1.75vh">{{ playerHand[0].cardBaseHealth }}</div></span>
           <h1 style="position: absolute; top: 4vh; left: 2vh; font-size: 2vh">{{ playerHand[0].cardName }}</h1>
@@ -454,7 +557,7 @@
           <div v-if="playerHand[9].cardRarity=='Silver'" style="position: absolute; background-color: #a6a6a6; width: 2vh; height: 2vh; right: 10px"></div>
           <div v-if="playerHand[9].cardRarity=='Gold'" style="position: absolute; background-color: #e6b800; width: 2vh; height: 2vh; right: 10px"></div>
       </div>
-      <div v-if="chosenCardPlayedCard!='Any Card From Own Deck' && !isEnemyTurn && !showTutoredCard && chosenCardTarget!='Manual' && !playerPlayed">
+      <div v-if="chosenCardPlayedCard!='Any Card From Own Deck' && !isEnemyTurn && !showTutoredCard && chosenCardTarget!='Manual' && !playerPlayed && !playerPassed">
         <div @click="chosenCard=playerHand[0]; chosenPlayableCard=playerHand[0]; chosenPlayableCardIndex=0" v-if="playerHand[0].cardName" style="width: 15vh; height: 10vh; position: absolute; top: 0px"></div>
         <div @click="chosenCard=playerHand[1]; chosenPlayableCard=playerHand[1]; chosenPlayableCardIndex=1" v-if="playerHand[1].cardName" style="width: 15vh; height: 10vh; position: absolute; bottom: 0px"></div>
         <div @click="chosenCard=playerHand[2]; chosenPlayableCard=playerHand[2]; chosenPlayableCardIndex=2" v-if="playerHand[2].cardName" style="width: 15vh; height: 10vh; position: absolute; left: 15vh; top: 0px"></div>
@@ -466,11 +569,11 @@
         <div @click="chosenCard=playerHand[8]; chosenPlayableCard=playerHand[8]; chosenPlayableCardIndex=8" v-if="playerHand[8].cardName" style="width: 15vh; height: 10vh; position: absolute; left: 60vh; top: 0px"></div>
         <div @click="chosenCard=playerHand[9]; chosenPlayableCard=playerHand[9]; chosenPlayableCardIndex=9" v-if="playerHand[9].cardName" style="width: 15vh; height: 10vh; position: absolute; left: 60vh; bottom: 0px"></div>
       </div>
-      <hr class="vertical" style="position: absolute; left: 18%; height: 20vh">
-      <hr class="vertical" style="position: absolute; left: 38%; height: 20vh">
-      <hr class="vertical" style="position: absolute; left: 58%; height: 20vh">
-      <hr class="vertical" style="position: absolute; left: 78%; height: 20vh">
-      <hr style="position: absolute; top: 40%; width: 99.5%; border: 1px solid">
+      <hr class="vertical" style="position: absolute; left: 19%; height: 20vh">
+      <hr class="vertical" style="position: absolute; left: 39%; height: 20vh">
+      <hr class="vertical" style="position: absolute; left: 59%; height: 20vh">
+      <hr class="vertical" style="position: absolute; left: 79%; height: 20vh">
+      <hr style="position: absolute; top: 44%; width: 100%; border: 1px solid">
     </div> <!-- Player Hand --->
     <div v-if="showDeck" style="position: absolute; left: 60%; top: 12%; background-color: gray; width: 75vh; height: 20vh">
       <div @click="chosenCard=visibleDeck[0]" v-if="visibleDeck[0]" style="background-color: white; width: 15vh; height: 10vh; position: absolute; top: 0px">
@@ -779,12 +882,13 @@
     <div v-if="!showStartGame" style="position: absolute; right: 1%; top: 48.5%;">
         <button v-if="isEnemyTurn" style="font-size: 2vh; height: 5vh; background-color: antiquewhite;">Enemy Turn</button>
         <button v-if="cardPlayed" @click="startEnemyTurn(); cardPlayed=false; isEnemyTurn=true" style="font-size: 2vh; height: 5vh; background-color: red;">End Turn</button>
-        <button v-if="!cardPlayed && !isEnemyTurn" @click="playerPassed=true; startEnemyTurn()" style="font-size: 2vh; height: 5vh; background-color: antiquewhite;">Pass</button>
+        <button v-if="!cardPlayed && !isEnemyTurn && chosenCardPlayedCard!='Any Card From Own Deck' && !showTutoredCard && chosenCardTarget!='Manual' && !playerPlayed && !playerPassed" @click="playerPassed=true; checkRoundEnd(); chosenCard={}; chosenPlayableCard={}; chosenPlayableCardIndex=null" style="font-size: 2vh; height: 5vh; background-color: antiquewhite;">Pass</button>
     </div> <!-- Pass and End Turn --->
+    <div style="position: absolute; right: 10%; top: 40;">{{ playerPlayed }}</div>
   </div>
 </template>
 
-<script lang="ts">
+<script lang="js">
 import decks from "@/assets/decks.ts"
 export default{
   data() {
@@ -799,16 +903,18 @@ export default{
           playerPassed: false,
           playerPlayed: false,
           playerStarts: false,
+          isRedrawPhase: false,
+          redrawnCards: [],
           gameResult: "",
           opponentBoard: [{}, {}, {}, {}, {}, {}, {}, {}, {}, {}],
           playerBoard: [{}, {}, {}, {}, {}, {}, {}, {}, {}, {}],
           opponentHand:  [{}, {}, {}, {}, {}, {}, {}, {}, {}, {}],
           playerHand: [{}, {}, {}, {}, {}, {}, {}, {}, {}, {}],
-          opponentDeck: decks[1][4].deck,
+          opponentDeck: decks[1][2].deck,
           visibleDeck:[],
           playerGraveyard:[],
           opponentGraveyard:[],
-          playerDeck: decks[0][4].deck,
+          playerDeck: decks[0][2].deck,
           showStartGame: true,
           isEnemyTurn: false,
           cardPlayed: false,
@@ -975,7 +1081,8 @@ export default{
                     revealed: chosenRevealed,
             }}
           }
-          this.showStartGame = false
+          this.showStartGame = false;
+          this.isRedrawPhase = true
       },
       playCard(boardI){
           for(let i = 0; i < this.playerDeck.length; i++){
@@ -1650,6 +1757,7 @@ export default{
                     this.playerBoard[this.filledBoardSpace[i]].statusses[1] = {status: this.playerBoard[boardI].cardStatus, duration}
           } else if(this.playerBoard[boardI].cardStatus=="Shield"){this.playerBoard[this.filledBoardSpace[i]].statusses[2] = {status: this.playerBoard[boardI].cardStatus, duration: 999}}
             else if(this.playerBoard[boardI].cardStatus=="Freeze"){this.playerBoard[this.filledBoardSpace[i]].statusses[3] = {status: this.playerBoard[boardI].cardStatus, duration: 999}}
+            if(this.playerBoard[boardI].cardStatusDuration){duration = this.playerBoard[boardI].cardStatusDuration}
            }
        } else if(this.playerBoard[boardI].cardEffectTarget=="All Enemies"){
            for(let i = 0; i < this.filledOpponentBoardSpace.length; i++){
@@ -1663,6 +1771,7 @@ export default{
                     this.opponentBoard[this.filledOpponentBoardSpace[i]].statusses[1] = {status: this.playerBoard[boardI].cardStatus, duration}
          } else if(this.playerBoard[boardI].cardStatus=="Shield"){this.opponentBoard[this.filledOpponentBoardSpace[i]].statusses[2] = {status: this.playerBoard[boardI].cardStatus, duration: 999}}
            else if(this.playerBoard[boardI].cardStatus=="Freeze"){this.opponentBoard[this.filledOpponentBoardSpace[i]].statusses[3] = {status: this.playerBoard[boardI].cardStatus, duration: 999}}
+           if(this.playerBoard[boardI].cardStatusDuration){duration = this.playerBoard[boardI].cardStatusDuration}
            }
           }}
           if(this.playerBoard[boardI].cardEffect2=="Status" && this.playerBoard[boardI].cardEffectTarget2!="Manual"){
@@ -1789,6 +1898,7 @@ export default{
                     this.playerBoard[this.filledBoardSpace[i]].statusses[1] = {status: this.playerBoard[boardI].cardStatus2, duration}
           } else if(this.playerBoard[boardI].cardStatus2=="Shield"){this.playerBoard[this.filledBoardSpace[i]].statusses[2] = {status: this.playerBoard[boardI].cardStatus2, duration: 999}}
             else if(this.playerBoard[boardI].cardStatus2=="Freeze"){this.playerBoard[this.filledBoardSpace[i]].statusses[3] = {status: this.playerBoard[boardI].cardStatus2, duration: 999}}
+            if(this.playerBoard[boardI].cardStatusDuration2){duration = this.playerBoard[boardI].cardStatusDuration2}
            }
        } else if(this.playerBoard[boardI].cardEffectTarget2=="All Enemies"){
            for(let i = 0; i < this.filledOpponentBoardSpace.length; i++){
@@ -1802,6 +1912,7 @@ export default{
                     this.opponentBoard[this.filledOpponentBoardSpace[i]].statusses[1] = {status: this.playerBoard[boardI].cardStatus2, duration}
          } else if(this.playerBoard[boardI].cardStatus2=="Shield"){this.opponentBoard[this.filledOpponentBoardSpace[i]].statusses[2] = {status: this.playerBoard[boardI].cardStatus2, duration: 999}}
            else if(this.playerBoard[boardI].cardStatus2=="Freeze"){this.opponentBoard[this.filledOpponentBoardSpace[i]].statusses[3] = {status: this.playerBoard[boardI].cardStatus2, duration: 999}}
+           if(this.playerBoard[boardI].cardStatusDuration2){duration = this.playerBoard[boardI].cardStatusDuration2}
            }
           }}
           if(this.playerBoard[boardI].cardEffect=="Reveal" && this.opponentHand.length>0){
@@ -1881,28 +1992,24 @@ export default{
                   this.chosenCardPlayedCard = ""
                   this.chosenCardTargetType = ""
                   this.countPoints();
-                  this.processEngines();
-                  this.processStatus();
                   this.cardPlayed = true
                   this.checkDeath();
               }
           }
           if(this.playerBoard[boardI].cardEffectTarget != "Manual"){
               this.countPoints();
-              this.processEngines();
-              this.processStatus();
               this.cardPlayed = true
               this.checkDeath();
           }
           if(this.playerBoard[boardI].cardEffect=="Removal"){
               let pass = false
               if(this.chosenCardRemovalCondition=="Above Value"){
-                  for(let i = 0; i < this.opponentBoard.length; i++){
-                    if(this.opponentBoard[i].cardHealth>this.chosenCardRemovalConditionValue){pass=true}
+                  for(let i = 0; i < this.filledOpponentBoardSpace.length; i++){
+                    if(this.opponentBoard[this.filledOpponentBoardSpace[i]].cardHealth>this.chosenCardRemovalConditionValue){pass=true}
               }}
               if(this.chosenCardRemovalCondition=="Bleeding Enemy Health"){
-                  for(let i = 0; i < this.opponentBoard.length; i++){
-                    if(this.opponentBoard[i].statusses[0].duration>0){pass=true}
+                  for(let i = 0; i < this.filledOpponentBoardSpace.length; i++){
+                    if(this.opponentBoard[this.filledOpponentBoardSpace[i]].statusses[0].duration>0){pass=true}
               }
               }
               if(pass==false){
@@ -1917,13 +2024,11 @@ export default{
                   this.chosenCardPlayedCard = ""
                   this.chosenCardTargetType = ""
                   this.countPoints();
-                  this.processEngines();
                   this.cardPlayed = true
                   this.checkDeath();
               }
           }
           this.playerPlayed = true;
-          console.log(this.chosenCardTargetType)
       },
       processDeploy(i){
           if(this.chosenCardEffectCondition=="Right Unit Health"){
@@ -1990,14 +2095,17 @@ export default{
                           if(this.playerBoard[i].statusses[0].duration && this.playerBoard[i].statusses[0].duration>0){
                             duration = this.chosenCardStatusDuration + this.playerBoard[i].statusses[0].duration}   
                           this.playerBoard[i].statusses[0] = {status: "Bleeding", duration}
+                          if(this.chosenCardStatusDuration){duration = this.chosenCardStatusDuration}
                         if(i!=0){if(this.playerBoard[i-1].cardName) {
                           if(this.playerBoard[i-1].statusses[0].duration && this.playerBoard[i-1].statusses[0].duration>0){
                             duration = this.chosenCardStatusDuration + this.playerBoard[i-1].statusses[0].duration}   
                           this.playerBoard[i-1].statusses[0] = {status: "Bleeding", duration}
+                          if(this.chosenCardStatusDuration){duration = this.chosenCardStatusDuration}
                       }} if(i!=9){if(this.playerBoard[i+1].cardName) {
                           if(this.playerBoard[i+1].statusses[0].duration && this.playerBoard[i+1].statusses[0].duration>0){
                             duration = this.chosenCardStatusDuration + this.playerBoard[i+1].statusses[0].duration}   
                           this.playerBoard[i+1].statusses[0] = {status: "Bleeding", duration}
+                          if(this.chosenCardStatusDuration){duration = this.chosenCardStatusDuration}
                   }}
                 } if(this.chosenCardStatus=="Vitality"){
                     if(this.playerBoard[i].statusses[1].duration && this.playerBoard[i].statusses[1].duration>0){
@@ -2015,7 +2123,7 @@ export default{
             }
           } else if(this.chosenCardTargetType=="Enemy" && this.filledOpponentBoardSpace.length){
               if(this.chosenCardEffect=="Boost"){
-                  this.opponentBoard[i].cardHealth += this.chosenCardEffectValue; console.log(this.chosenCardEffectValue)
+                  this.opponentBoard[i].cardHealth += this.chosenCardEffectValue
                   if(this.spyI!=null){this.playerBoard[this.spyI].cardHealth += this.chosenCardEffectValue}
                   if(this.spyI2!=null){this.playerBoard[this.spyI2].cardHealth += this.chosenCardEffectValue}
                   if(this.opponentBoard[i].cardEngineCondition){if(this.opponentBoard[i].cardEngineCondition=="Received Boost"){this.opponentBoard[i].cardEngineValue++}}
@@ -2073,18 +2181,22 @@ export default{
                       if(this.opponentBoard[i].statusses[0].duration && this.opponentBoard[i].statusses[0].duration>0){
                         duration = this.chosenCardStatusDuration + this.opponentBoard[i].statusses[0].duration}   
                       this.opponentBoard[i].statusses[0] = {status: this.chosenCardStatus, duration}
+                      if(this.chosenCardStatusDuration){duration = this.chosenCardStatusDuration}
                 } if(this.chosenCardStatus=="Adjacent Bleeding") {
                       if(this.opponentBoard[i].statusses[0].duration && this.opponentBoard[i].statusses[0].duration>0){
                         duration = this.chosenCardStatusDuration + this.opponentBoard[i].statusses[0].duration}   
                       this.opponentBoard[i].statusses[0] = {status: "Bleeding", duration}
+                      if(this.chosenCardStatusDuration){duration = this.chosenCardStatusDuration}
                       if(i!=0){if(this.opponentBoard[i-1].cardName) {
                         if(this.opponentBoard[i-1].statusses[0].duration && this.opponentBoard[i-1].statusses[0].duration>0){
                           duration = this.chosenCardStatusDuration + this.opponentBoard[i-1].statusses[0].duration}   
                         this.opponentBoard[i-1].statusses[0] = {status: "Bleeding", duration}
+                        if(this.chosenCardStatusDuration){duration = this.chosenCardStatusDuration}
                     }} if(i!=9){if(this.opponentBoard[i+1].cardName) {
                         if(this.opponentBoard[i+1].statusses[0].duration && this.opponentBoard[i+1].statusses[0].duration>0){
                           duration = this.chosenCardStatusDuration + this.opponentBoard[i+1].statusses[0].duration}   
                         this.opponentBoard[i+1].statusses[0] = {status: "Bleeding", duration}
+                        if(this.chosenCardStatusDuration){duration = this.chosenCardStatusDuration}
                     }}
                 } if(this.chosenCardStatus=="Vitality"){
                     if(this.opponentBoard[i].statusses[1].duration && this.opponentBoard[i].statusses[1].duration>0){
@@ -2093,7 +2205,7 @@ export default{
                 } if(this.chosenCardStatus=="Shield"){this.opponentBoard[i].statusses[2] = {status: this.chosenCardStatus, duration: 999}}
                   if(this.chosenCardStatus=="Freeze"){this.opponentBoard[i].statusses[3] = {status: this.chosenCardStatus, duration: 999}}
        } else if(this.chosenCardEffect=="Trade Place"){
-        if(this.opponentBoard[i].cardEffect=="Engine"){
+        if(this.opponentBoard[i].cardEffect=="Engine" || this.opponentBoard[i].cardEffect2=="Engine"){
            if(this.oppChiefI==i){this.oppChiefI=null}
        else if(this.oppChiefI2==i){this.oppChiefI2=null}
            if(this.oppSpyI==i){this.oppSpyI=null}
@@ -2102,9 +2214,10 @@ export default{
       else if(this.opponentBoard[i].cardEngineCondition=="Allied Unit Damaged"){this.chiefI=this.chosenCardIndex}
            if(this.opponentBoard[i].cardEngineCondition=="Enemy Boosted" && this.spyI!=null){this.spyI2=this.chosenCardIndex}
       else if(this.opponentBoard[i].cardEngineCondition=="Enemy Boosted"){this.spyI=this.chosenCardIndex}
-           for(let o = 0; o < this.opponentEngines; o++){
+           for(let o = 0; o < this.opponentEngines.length; o++){
                if(this.opponentEngines[o][1]==i){
                    let engine = this.opponentEngines.splice(o, 1);
+                   console.log(`Engine: ${engine}`)
                    this.alliedEngines.push(engine)}
            }
        }
@@ -2140,54 +2253,62 @@ export default{
                 this.chosenCardStatusDuration = null
                 this.chosenCardEngineEffect = ""
                 this.chosenCardTargetType = ""
-                this.countPoints();
-                this.processEngines();
-                this.processStatus();
                 this.cardPlayed = true
                 this.checkDeath();
+                this.countPoints();
       },
       startEnemyTurn(){
           if(!this.opponentPassed){this.isEnemyTurn=true}
-          this.checkDeath();
+          this.playerPlayed = true;
+          console.log("Enemy turn started")
           this.countPoints();
+          this.processEngines();
+          this.processStatus();
+          this.checkDeath();
           setTimeout(() => {
-            this.checkRoundEnd();
-            if(!this.opponentPassed){this.playEnemyCard();}
+            if(!this.opponentPassed){this.isEnemyTurn=true}
+            this.playerPlayed = true;
+            if(this.playerPlayed && this.isEnemyTurn){this.playEnemyCard(); this.isEnemyTurn=false}
             else{this.playerPlayed=false}
             this.checkDeath();
             this.processEnemyEngines();
             this.processEnemyStatus();
             this.checkDeath();
             this.countPoints();
+            if(!this.playerPassed){
+              this.isEnemyTurn = false
+              this.playerPlayed = false;
+            }
             this.checkRoundEnd();
-            if(!this.playerPassed){this.isEnemyTurn=false}
-            else{this.startEnemyTurn()}
         }, 2000)
       },
       playEnemyCard(){
-          let shouldPass = false
-          if(!this.playerWonRound && ((this.opponentScore >= this.playerScore + 10) || ((this.opponentScore + 15 <= this.playerScore) && (this.filledOpponentBoardSpace.length>3)))){shouldPass = true}
-          if(this.playerPassed && this.playerScore < this.opponentScore){this.opponentPassed=true; return "aaa"}
-          if(this.chosenEnemyPlayableCard==null){
-            let handI = []
-            for(let i = 0; i<10; i++){
-                if(this.opponentHand[i].cardName){handI.push(i)}
-            }
-            if(handI.length==0 || shouldPass){this.opponentPassed=true; return "aaa"
-            } else {this.chosenEnemyPlayableCardIndex = this.chooseEnemyCard(handI)}
-            if(this.chosenEnemyPlayableCardIndex==undefined){this.chosenEnemyPlayableCardIndex=handI[Math.floor(Math.random()*handI.length)] }
-            this.chosenEnemyPlayableCard = this.opponentHand[this.chosenEnemyPlayableCardIndex]
+          console.log("Enemy plays card")
+          let handI = []
+          for(let i = 0; i<10; i++){
+                if(this.opponentHand[i].cardName!=undefined){handI.push(i)}
           }
-        let availableSpace=[]
-        for(let i = 0; i<10; i++){
+          let availableSpace=[]
+          for(let i = 0; i<10; i++){
             if(this.filledOpponentBoardSpace.indexOf(i)==-1){
                 availableSpace.push(i)
             }
-        }
-        let boardI = null
-        let noSpace = false 
+          }
+          let boardI = null
+          let noSpace = false 
+          let shouldPass = false
+          if(!this.chosenEnemyPlayableCard){
+            if(!this.playerWonRound && ((this.opponentScore >= this.playerScore + 10) || ((this.opponentScore + 10 <= this.playerScore)) && (handI.length<9))){shouldPass = true}
+            if(availableSpace.length==0){noSpace = true; this.opponentPassed=true; this.isEnemyTurn=false; this.playerPlayed=false; return "aaa"}
+            if(this.playerPassed && this.playerScore < this.opponentScore){this.opponentPassed=true; this.isEnemyTurn=true; this.playerPlayed=true; return "aaa"}
+            if(handI.length==0 || shouldPass){this.opponentPassed=true; this.isEnemyTurn=true; this.playerPlayed=true; return "aaa"
+            } else {this.chosenEnemyPlayableCardIndex = this.chooseEnemyCard(this.opponentHand, handI)}
+            if(this.chosenEnemyPlayableCardIndex==undefined){this.chosenEnemyPlayableCardIndex=handI[Math.floor(Math.random()*handI.length)]}
+            this.chosenEnemyPlayableCard = this.opponentHand[this.chosenEnemyPlayableCardIndex]
+          }
+        
         if(availableSpace.length!=0) {boardI = this.chooseEnemyCardPosition(availableSpace)
-        } else {noSpace = true; this.opponentPassed=true}
+        } else {this.discardEnemyCard()}
         if(noSpace==false){
           this.chosenEnemyCardEffect = this.chosenEnemyPlayableCard.cardEffect
           this.chosenEnemyCardEffectCondition = this.chosenEnemyPlayableCard.cardEffectCondition
@@ -2240,13 +2361,12 @@ export default{
               statusses: [{}, {}, {}, {}]
           }
           this.chosenEnemyPlayableCard.cardAmount++
-          this.opponentHand[this.chosenEnemyPlayableCardIndex]={};
+          if(this.chosenEnemyPlayableCardIndex!=undefined){this.opponentHand[this.chosenEnemyPlayableCardIndex]={}}
           this.chosenEnemyCard={};
           this.chosenEnemyPlayableCard=null,
           this.showTutoredCard=false
           this.filledOpponentBoardSpace.push(boardI)
           this.checkDeath()
-          console.log(this.opponentHand)
 
           if(this.opponentBoard[boardI].cardEffectTarget=="Left" && boardI==0){
               this.opponentBoard[boardI].cardEffectTarget=""
@@ -2851,6 +2971,7 @@ export default{
                     this.opponentBoard[this.filledOpponentBoardSpace[i]].statusses[1] = {status: this.opponentBoard[boardI].cardStatus, duration}
           } else if(this.opponentBoard[boardI].cardStatus=="Shield"){this.opponentBoard[this.filledOpponentBoardSpace[i]].statusses[2] = {status: this.opponentBoard[boardI].cardStatus, duration: 999}}
             else if(this.opponentBoard[boardI].cardStatus=="Freeze"){this.opponentBoard[this.filledOpponentBoardSpace[i]].statusses[3] = {status: this.opponentBoard[boardI].cardStatus, duration: 999}}
+            if(this.opponentBoard[boardI].cardStatusDuration){duration = this.opponentBoard[boardI].cardStatusDuration}
            }
        } else if(this.opponentBoard[boardI].cardEffectTarget=="All Enemies"){
            for(let i = 0; i < this.filledBoardSpace.length; i++){
@@ -2864,11 +2985,12 @@ export default{
                     this.playerBoard[this.filledBoardSpace[i]].statusses[1] = {status: this.opponentBoard[boardI].cardStatus, duration}
          } else if(this.opponentBoard[boardI].cardStatus=="Shield"){this.playerBoard[this.filledBoardSpace[i]].statusses[2] = {status: this.opponentBoard[boardI].cardStatus, duration: 999}}
            else if(this.opponentBoard[boardI].cardStatus=="Freeze"){this.playerBoard[this.filledBoardSpace[i]].statusses[3] = {status: this.opponentBoard[boardI].cardStatus, duration: 999}}
+           if(this.opponentBoard[boardI].cardStatusDuration){duration = this.opponentBoard[boardI].cardStatusDuration}
            }
           }}
           if(this.opponentBoard[boardI].cardEffect2=="Status" && this.opponentBoard[boardI].cardEffectTarget2!="Manual"){
               let duration = 0
-              if(this.opponentBoard[boardI].cardStatusDuration){duration = this.opponentBoard[boardI].cardStatusDuration2}
+              if(this.opponentBoard[boardI].cardStatusDuration2){duration = this.opponentBoard[boardI].cardStatusDuration2}
               if(this.opponentBoard[boardI].cardEffectTarget2=="Self"){
                 if(this.opponentBoard[boardI].cardStatus2=="Bleeding"){
                     if(this.opponentBoard[boardI].statusses[0].duration && this.opponentBoard[boardI].statusses[0].duration>0){
@@ -2990,6 +3112,7 @@ export default{
                     this.opponentBoard[this.filledOpponentBoardSpace[i]].statusses[1] = {status: this.opponentBoard[boardI].cardStatus2, duration}
           } else if(this.opponentBoard[boardI].cardStatus2=="Shield"){this.opponentBoard[this.filledOpponentBoardSpace[i]].statusses[2] = {status: this.opponentBoard[boardI].cardStatus2, duration: 999}}
             else if(this.opponentBoard[boardI].cardStatus2=="Freeze"){this.opponentBoard[this.filledOpponentBoardSpace[i]].statusses[3] = {status: this.opponentBoard[boardI].cardStatus2, duration: 999}}
+            if(this.opponentBoard[boardI].cardStatusDuration2){duration = this.opponentBoard[boardI].cardStatusDuration2}
            }
        } else if(this.opponentBoard[boardI].cardEffectTarget2=="All Enemies"){
            for(let i = 0; i < this.filledBoardSpace.length; i++){
@@ -3003,6 +3126,7 @@ export default{
                     this.playerBoard[this.filledBoardSpace[i]].statusses[1] = {status: this.opponentBoard[boardI].cardStatus2, duration}
          } else if(this.opponentBoard[boardI].cardStatus2=="Shield"){this.playerBoard[this.filledBoardSpace[i]].statusses[2] = {status: this.opponentBoard[boardI].cardStatus2, duration: 999}}
            else if(this.opponentBoard[boardI].cardStatus2=="Freeze"){this.playerBoard[this.filledBoardSpace[i]].statusses[3] = {status: this.opponentBoard[boardI].cardStatus2, duration: 999}}
+           if(this.opponentBoard[boardI].cardStatusDuration2){duration = this.opponentBoard[boardI].cardStatusDuration2}
            }
           }}
           if(this.opponentBoard[boardI].cardEffect=="Reveal" && this.playerHand.length>0){
@@ -3089,20 +3213,14 @@ export default{
                   this.playEnemyCard()
        } else if(this.opponentBoard[boardI].playedCard=="Any Card From Own Deck"){
                   if(this.opponentDeck.length){
-                    let goldCards = []
-                    let silverCards = []
-                    for(let i = 0; i < this.opponentDeck.length; i++){
-                        if(this.opponentDeck[i].cardRarity=="Gold"){goldCards.push(this.opponentDeck[i])}
-                        else if (this.opponentDeck[i].cardRarity=="Silver"){silverCards.push(this.opponentDeck[i])}
-                    }
-                    if(goldCards.length){this.chosenEnemyPlayableCard = goldCards[Math.floor(Math.random()*goldCards.length)]}
-                    else if(silverCards.length){this.chosenEnemyPlayableCard = silverCards[Math.floor(Math.random()*silverCards.length)]}
-                    else {this.chosenEnemyPlayableCard = this.opponentDeck[Math.floor(Math.random()*this.opponentDeck.length)]}
-                    if((this.chosenEnemyPlayableCard.cardEffect=="Engine" || this.chosenEnemyPlayableCard.cardEffect2=="Engine") && (this.chosenEnemyPlayableCard.cardEngineType!="Boost" || this.chosenEnemyPlayableCard.cardTargetUnitType!="Enemy")){this.chosenEnemyCardType="Engine"}
-                    if((this.chosenEnemyPlayableCard.cardEffect=="Boost" || this.chosenEnemyPlayableCard.cardStatus=="Vitality" || this.chosenEnemyPlayableCard.cardStatus=="Shield" || this.chosenEnemyPlayableCard.cardEffect=="Damage Bond" || this.chosenEnemyPlayableCard.cardEffect=="Unkillable") && 
-                    this.chosenEnemyPlayableCard.cardTargetUnitType=="Ally"){this.chosenEnemyCardType="Support"}
-                    if((this.chosenEnemyPlayableCard.cardEffect=="Boost" && this.chosenEnemyPlayableCard.cardEffectTarget=="Enemy") || (this.chosenEnemyPlayableCard.cardEngineType=="Boost" && this.chosenEnemyPlayableCard.cardEngineTarget=="Enemy")){this.chosenEnemyCardType="Neg Effect"}
+                    let deckI = []
+                    for(let i = 0; i < this.opponentDeck.length; i++){if(this.opponentDeck[i].cardName!=undefined){deckI.push(i)}}
+                    console.log(`opponentDeck: ${this.opponentDeck}, deckI: ${deckI}`)
+                    let index = this.chooseEnemyCard(this.opponentDeck, deckI)
+                    this.chosenEnemyPlayableCard = this.opponentDeck[index]
+                    console.log(`thechosencard: ${this.chosenEnemyPlayableCard}`)
                     this.playEnemyCard()
+                    this.opponentDeck.splice(index, 1)
                   }  
        } else if(this.opponentBoard[boardI].playedCard=="Revealed Card In Opponent Hand"){
                   let revealedCards = []
@@ -3110,15 +3228,9 @@ export default{
                       if(this.playerHand[i].revealed){revealedCards.push(this.playerHand[i])}
                   }
                   if(revealedCards.length){
-                    let goldCards = []
-                    let silverCards = []
-                    for(let i = 0; i < revealedCards.length; i++){
-                        if(revealedCards[i].cardRarity=="Gold"){goldCards.push(revealedCards[i])}
-                        else if (revealedCards[i].cardRarity=="Silver"){silverCards.push(revealedCards[i])}
-                    }
-                    if(goldCards.length){this.chosenEnemyPlayableCard = goldCards[Math.floor(Math.random()*goldCards.length)]}
-                    else if(silverCards.length){this.chosenEnemyPlayableCard = silverCards[Math.floor(Math.random()*silverCards.length)]}
-                    else {this.chosenEnemyPlayableCard = revealedCards[Math.floor(Math.random()*revealedCards.length)]}
+                    let revealedI = [];
+                    for(let i = 0; i < revealedCards.length; i++){if(revealedCards[i].cardName!=undefined){revealedI.push(i)}}
+                    this.chosenEnemyPlayableCard = revealedCards[this.chooseEnemyCard(revealedCards, revealedI)];
                     this.playEnemyCard()
                   }  
        }}, 500)
@@ -3156,10 +3268,12 @@ export default{
           }
           if(this.opponentBoard[boardI].cardEffect=="Removal"){
               let pass = false
-              for(let i = 0; i < this.playerBoard.length; i++){
-                  if(this.playerBoard[i].cardHealth>this.chosenEnemyCardRemovalConditionValue){pass=true}
+              for(let i = 0; i < this.filledBoardSpace.length; i++){
+                  if(this.chosenEnemyCardRemovalCondition=="Above Value"){if(this.playerBoard[this.filledBoardSpace[i]].cardHealth>this.chosenEnemyCardRemovalConditionValue){pass=true}}
+                  if(this.chosenEnemyCardRemovalCondition=="Bleeding Enemy Health"){if(this.playerBoard[this.filledBoardSpace[i]].statusses[0].duration){pass=true}}
               }
-              if(pass==false){
+              if(pass){this.processEnemyDeploy()}
+              else {
                   this.chosenEnemyCardHealth = null
                   this.chosenEnemyCardEffect = ""
                   this.chosenEnemyCardTarget = ""
@@ -3170,26 +3284,33 @@ export default{
                   this.chosenEnemyCardEngineEffect = ""
               }
           }
-          this.playerPlayed = false;
+          this.countPoints()
       }
       },
-      chooseEnemyCard(handI){
+      chooseEnemyCard(cardBase, baseI){
+          if(this.playerPassed && this.playerScore - this.opponentScore < 4){
+            for(let i = 0; i < this.opponentHand.length; i++){
+                if(this.opponentHand[i].cardRarity=="Bronze"){return i}
+            }
+          }
           let controlCards = []
           let supportCards = []
           let engines = []
           let graveCards = []
           let removalCards = []
           let miscCards = []
-          for (let i = 0; i < handI.length; i++){
-              if((this.opponentHand[handI[i]].cardEffect=="Damage" || this.opponentHand[handI[i]].cardEffect=="Adjacent Damage" || this.opponentHand[handI[i]].cardEffect=="Trade Place" || this.opponentHand[handI[i]].cardStatus=="Bleeding" || this.opponentHand[handI[i]].cardStatus=="Adjacent Bleeding" || this.opponentHand[handI[i]].cardStatus=="Freeze") &&
-                   (this.opponentHand[handI[i]].cardTargetUnitType != "Ally" && this.opponentHand[handI[i]].cardEffectTarget!="Random")){controlCards.push(handI[i])}
-              else if((this.opponentHand[handI[i]].cardEffect=="Boost" || this.opponentHand[handI[i]].cardStatus=="Vitality" || this.opponentHand[handI[i]].cardStatus=="Shield" || this.opponentHand[handI[i]].cardEffect=="Damage Bond" || this.opponentHand[handI[i]].cardEffect=="Unkillable") && 
-                    (this.opponentHand[handI[i]].cardTargetUnitType!="Enemy" || this.opponentHand[handI[i]].cardTargetUnitType!="Self")){supportCards.push(handI[i])}
-              else if((this.opponentHand[handI[i]].cardEffect=="Engine" || this.opponentHand[handI[i]].cardEffect2=="Engine") && (this.opponentHand[handI[i]].cardEngineType!="Boost" || this.opponentHand[handI[i]].cardTargetUnitType!="Enemy")){engines.push(handI[i])}
-              else if(this.opponentHand[handI[i]].cardEffect=="Copy Grave Unit" || this.opponentHand[handI[i]].cardEffect=="Grave Consume"){graveCards.push(handI[i])}
-              else if(this.opponentHand[handI[i]].cardEffect=="Removal"){removalCards.push(handI[i])}
-              else {miscCards.push(handI[i])}
+          let portalI = null
+          let enginesInDeck = []
+          for (let i = 0; i < baseI.length; i++){
+              if((cardBase[baseI[i]].cardEffect=="Damage" || cardBase[baseI[i]].cardEffect=="Adjacent Damage" || cardBase[baseI[i]].cardEffect=="Trade Place" || cardBase[baseI[i]].cardStatus=="Bleeding" || cardBase[baseI[i]].cardStatus=="Adjacent Bleeding" || cardBase[baseI[i]].cardStatus=="Freeze") && (cardBase[baseI[i]].cardTargetUnitType != "Ally" && cardBase[baseI[i]].cardEffectTarget!="Random")){controlCards.push(baseI[i])}
+              else if((cardBase[baseI[i]].cardEffect=="Boost" || cardBase[baseI[i]].cardStatus=="Vitality" || cardBase[baseI[i]].cardStatus=="Shield" || cardBase[baseI[i]].cardEffect=="Damage Bond" || cardBase[baseI[i]].cardEffect=="Unkillable") && (cardBase[baseI[i]].cardTargetUnitType!="Enemy" || cardBase[baseI[i]].cardTargetUnitType!="Self")){supportCards.push(baseI[i])}
+              else if((cardBase[baseI[i]].cardEffect=="Engine" || cardBase[baseI[i]].cardEffect2=="Engine") && (cardBase[baseI[i]].cardEngineType!="Boost" || cardBase[baseI[i]].cardTargetUnitType!="Enemy")){engines.push(baseI[i])}
+              else if(cardBase[baseI[i]].cardEffect=="Copy Grave Unit" || cardBase[baseI[i]].cardEffect=="Grave Consume"){graveCards.push(baseI[i])}
+              else if(cardBase[baseI[i]].cardEffect=="Removal"){removalCards.push(baseI[i])}
+              else if(cardBase[baseI[i]].playedCard=="Any Card From Own Deck"){portalI = baseI[i]; miscCards.push(baseI[i])}
+              else {miscCards.push(baseI[i])}
           }
+          for(let i = 0; i < this.opponentDeck.length; i++){if((this.opponentDeck[i].cardEffect=="Engine" || this.opponentDeck[i].cardEffect2=="Engine") && (this.opponentDeck[i].cardEngineType!="Boost" || this.opponentDeck[i].cardTargetUnitType!="Enemy")){enginesInDeck.push(i)}}
           let removalPossible = false
           let areBleedingEnemies = false
           let areTallEnemies = false
@@ -3197,8 +3318,8 @@ export default{
           let haveTallRemoval = false
           let tallRemovalValue = null
           for(let i = 0; i < removalCards.length; i++){
-              if(this.opponentHand[removalCards[i]].cardRemovalCondition=="Bleeding Enemy Health"){haveBleedRemoval=true}
-              if(this.opponentHand[removalCards[i]].cardRemovalConditionValue){haveTallRemoval=true; tallRemovalValue = this.opponentHand[removalCards[i]].cardRemovalConditionValue}
+              if(cardBase[removalCards[i]].cardRemovalCondition=="Bleeding Enemy Health"){haveBleedRemoval=true}
+              if(cardBase[removalCards[i]].cardRemovalConditionValue){haveTallRemoval=true; tallRemovalValue = cardBase[removalCards[i]].cardRemovalConditionValue}
           }
           for(let i = 0; i < this.filledBoardSpace.length; i++){
               if(this.playerBoard[this.filledBoardSpace[i]].statusses[0].status && haveBleedRemoval){areBleedingEnemies=true; removalPossible=true}
@@ -3209,21 +3330,23 @@ export default{
               let goldEngines = []
               let silverEngines = []
               for(let i = 0; i < engines.length; i++){
-                  if(this.opponentHand[engines[i]].cardEngineCondition=="Alone" && this.filledOpponentBoardSpace.length==0){return engines[i]} 
-                  else if(this.opponentHand[engines[i]].cardRarity=="Gold" && this.opponentHand[engines[i]].cardEffectTarget!="All Enemies"){goldEngines.push(engines[i])}
-                  else if(this.opponentHand[engines[i]].cardRarity=="Silver"){silverEngines.push(engines[i])}
+                  if(cardBase[engines[i]].cardEngineCondition=="Alone" && this.filledOpponentBoardSpace.length==0){return engines[i]} 
+                  else if(cardBase[engines[i]].cardRarity=="Gold" && cardBase[engines[i]].cardEffectTarget!="All Enemies"){goldEngines.push(engines[i])}
+                  else if(cardBase[engines[i]].cardRarity=="Silver"){silverEngines.push(engines[i])}
               }
               if(goldEngines.length){return goldEngines[Math.floor(Math.random()*goldEngines.length)]}
               else if(silverEngines.length){return silverEngines[Math.floor(Math.random()*silverEngines.length)]}
               else {return engines[Math.floor(Math.random()*engines.length)]}
+        } if (portalI != null && enginesInDeck.length){
+                return portalI;
         } if (supportCards.length && this.opponentEngines.length){
               this.chosenEnemyCardType = "Support"
               let prioritySupport = []
               let goodSupport = []
               for(let i = 0; i < supportCards.length; i++){
-                  if(this.opponentHand[supportCards[i]].cardEffect=="Unkillable"){return supportCards[i]}
-                  else if(this.opponentHand[supportCards[i]].cardStatus=="Vitality"){prioritySupport.push(supportCards[i])}
-                  else if(this.opponentHand[supportCards[i]].cardEffect=="Damage Bond" || this.opponentHand[supportCards[i]].cardStatus=="Shield"){goodSupport.push(supportCards[i])}
+                  if(cardBase[supportCards[i]].cardEffect=="Unkillable"){return supportCards[i]}
+                  else if(cardBase[supportCards[i]].cardStatus=="Vitality"){prioritySupport.push(supportCards[i])}
+                  else if(cardBase[supportCards[i]].cardEffect=="Damage Bond" || cardBase[supportCards[i]].cardStatus=="Shield"){goodSupport.push(supportCards[i])}
               }
               if(prioritySupport.length){return prioritySupport[Math.floor(Math.random()*prioritySupport.length)]}
               else if(goodSupport.length){return goodSupport[Math.floor(Math.random()*goodSupport.length)]}
@@ -3233,9 +3356,9 @@ export default{
               let priorityControl = []
               let goodControl = []
               for(let i = 0; i < controlCards.length; i++){
-                  if(this.opponentHand[controlCards[i]].cardEffect=="Trade Place"){return controlCards[i]}
-                  else if(this.opponentHand[controlCards[i]].cardStatus=="Freeze"){priorityControl.push(controlCards[i])}
-                  else if(this.opponentHand[controlCards[i]].cardEffect=="Bleeding"){goodControl.push(controlCards[i])}
+                  if(cardBase[controlCards[i]].cardEffect=="Trade Place"){return controlCards[i]}
+                  else if(cardBase[controlCards[i]].cardStatus=="Freeze"){priorityControl.push(controlCards[i])}
+                  else if(cardBase[controlCards[i]].cardEffect=="Bleeding"){goodControl.push(controlCards[i])}
               }
               if(priorityControl.length){return priorityControl[Math.floor(Math.random()*priorityControl.length)]}
               else if(goodControl.length){return goodControl[Math.floor(Math.random()*goodControl.length)]}
@@ -3243,83 +3366,13 @@ export default{
         } if (removalCards.length && removalPossible){
             this.chosenEnemyCardType = "Removal"
             for(let i = 0; i < removalCards.length; i++){
-                if(this.opponentHand[removalCards[i]].cardRemovalCondition=="Above Value" && areTallEnemies){return removalCards[i]}
-                else if (this.opponentHand[removalCards[i]].cardRemovalCondition=="Bleeding Enemy Health" && areBleedingEnemies){return removalCards[i]}
+                if(cardBase[removalCards[i]].cardRemovalCondition=="Above Value" && areTallEnemies){return removalCards[i]}
+                else if (cardBase[removalCards[i]].cardRemovalCondition=="Bleeding Enemy Health" && areBleedingEnemies){return removalCards[i]}
             }
-        } if (graveCards.length && this.opponentGraveyard.length){
-            this.chosenEnemyCardType = "Grave"
-            for(let i = 0; i < graveCards.length; i++){
-                if(this.opponentHand[graveCards[i]].cardEffect=="Copy Grave Unit"){return graveCards[i]}
-            }
-            return graveCards[Math.floor(Math.random()*graveCards.length)]
-        } if (miscCards.length){
-            this.chosenEnemyCardType = "Misc"
-            let revealCards = []
-            let playCards = []
-            let reduceHealthCards = []
-            let consumeCards = []
-            let noEffectCards = []
-            let gamblers = []
-            let negEffectCards = []
-            for (let i = 0; i < miscCards.length; i++){
-                if(this.opponentHand[miscCards[i]].cardEffect=="Reveal"){revealCards.push(miscCards[i])}
-                else if(this.opponentHand[miscCards[i]].cardEffect=="Play Card"){playCards.push(miscCards[i])}
-                else if(this.opponentHand[miscCards[i]].cardEffect=="Reduce Health"){reduceHealthCards.push(miscCards[i])}
-                else if(this.opponentHand[miscCards[i]].cardEffect=="Consume"){consumeCards.push(miscCards[i])}
-                else if(this.opponentHand[miscCards[i]].cardEffect==""){noEffectCards.push(miscCards[i])}
-                else if(this.opponentHand[miscCards[i]].cardEffectCondition=="Random" || this.opponentHand[miscCards[i]].cardEffectTarget=="Random"){gamblers.push(miscCards[i])}
-                else {negEffectCards.push(miscCards[i])}
-            }
-            let allRevealed = true
-            let areRevealed = false
-            let haveRevealPlay = false
-            let canPlayRevealed = false
-            for (let i = 0; i < playCards.length; i++){
-                if(this.opponentHand[playCards[i]].playedCard=="Revealed Card In Opponent Hand"){haveRevealPlay=true}
-            }
-            for (let i = 0; i < this.playerHand.length; i++){
-                if(this.playerHand[i].cardName){if(this.playerHand[i].revealed==false){allRevealed=false}}
-                else if(this.playerHand[i].cardName){if(this.playerHand[i].revealed==true){areRevealed=true}}
-            }
-            if(areRevealed && haveRevealPlay){canPlayRevealed=true}
-            if(haveRevealPlay==false){canPlayRevealed=true}
-            if(revealCards.length && this.playerHand.length && allRevealed==false){
-                for(let i = 0; i < revealCards.length; i++){if(this.opponentHand[revealCards[i]].cardEffectValue==3){return revealCards[i]}}
-                return revealCards[0]
-          } else if(playCards.length>1 || canPlayRevealed){
-                for(let i = 0; i < playCards.length; i++){if(this.opponentHand[playCards[i]].playedCard=="Revealed Card In Opponent Hand" && canPlayRevealed){return playCards[i]}}     
-                return playCards[Math.floor(Math.random()*playCards.length)]
-          } else if(reduceHealthCards.length){
-              for(let i = 0; i < reduceHealthCards.length; i++){if(this.opponentHand[reduceHealthCards[i]].cardRarity=="Gold"){return reduceHealthCards[i]}}
-              return reduceHealthCards[Math.floor(Math.random()*reduceHealthCards.length)]
-          } else if(consumeCards.length && this.filledOpponentBoardSpace.length){
-              for(let i = 0; i < consumeCards.length; i++){if(this.opponentHand[consumeCards[i]].cardRarity=="Gold"){return consumeCards[i]}}
-              return consumeCards[Math.floor(Math.random()*consumeCards.length)]
-          } else if(noEffectCards.length){
-            let leastHP = 999
-            let leastHPI = null
-            for(let i = 0; i < noEffectCards.length; i++){
-                if(this.opponentHand[noEffectCards[i]].cardHealth<leastHP){
-                    leastHP = this.opponentHand[noEffectCards[i]].cardHealth
-                    leastHPI = noEffectCards[i]
-                }
-                
-            }
-            return leastHPI
-          } else if(gamblers.length){
-              for(let i = 0; i < gamblers.length; i++){if(this.opponentHand[gamblers[i]].cardRarity=="Gold"){return gamblers[i]}}
-              return gamblers[Math.floor(Math.random()*gamblers.length)]
-          } else if(negEffectCards.length){
-              this.chosenEnemyCardType = "Negative Effect"
-              for(let i = 0; i < negEffectCards.length; i++){if(this.opponentHand[negEffectCards[i]].cardRarity=="Gold"){return negEffectCards[i]}}
-              return negEffectCards[Math.floor(Math.random()*negEffectCards.length)]
-          } else {
-              for(let i = 0; i < miscCards.length; i++){if(this.opponentHand[miscCards[i]].cardRarity=="Gold"){return miscCards[i]}}
-              return miscCards[Math.floor(Math.random()*miscCards.length)]
-          }
         } 
-        for(let i = 0; i < handI.length; i++){if(this.opponentHand[handI[i]].cardRarity=="Gold"){return handI[i]}}
-        return handI[Math.floor(Math.random()*handI.length)] 
+        for(let i = 0; i < baseI.length; i++){if(cardBase[baseI[i]].cardRarity=="Gold"){return baseI[i]}}
+        console.log("Random card chosen")
+        return baseI[Math.floor(Math.random()*baseI.length)] 
       },
       chooseEnemyCardPosition(availableSpace){
           let boostedSpots = []
@@ -3328,8 +3381,8 @@ export default{
           let protector = []
           let engines = []
           let adjacentSpot = null
-          let highestHPI = null
           let highestHP = 0
+          let highestHPI = null
           let goodSpace
           let board = this.filledOpponentBoardSpace.sort(function(a, b){return a-b});
           for(let i = 0; i<board.length; i++){
@@ -3426,9 +3479,16 @@ export default{
             if(goodSpots.length){return goodSpots[Math.floor(Math.random()*goodSpots.length)]}
             return availableSpace[Math.floor(Math.random()*availableSpace.length)]
         } if(this.chosenEnemyPlayableCard.cardEffectCondition=="Right Unit Health"){
-            if(highestHPI!=null && this.opponentBoard[highestHPI].cardName==undefined){return highestHPI-1}
-            return availableSpace[Math.floor(Math.random()*availableSpace.length)]
-        } 
+            if(highestHPI!=null){return highestHPI-1}
+            else {
+                  let highestHP2 = 0
+                  let highestHPI2 = null
+                  let availablePos = [] 
+                  for(let i = 1; i < board.length; i++){if(board[i]!=board[i-1]+1){availablePos.push(board[i]-1)}}
+                  if(availablePos.length){for(let i = 0; i < availablePos.length; i++){if(this.opponentBoard[availablePos[0]+1].cardHealth > highestHP2){highestHP2 = this.opponentBoard[availablePos[0]+1].cardHealth; highestHPI2 = availablePos[0]+1}}}
+                  if(highestHPI2 != null){return highestHPI2-1}
+            }
+        }
         if(boostedSpots.length){return boostedSpots[Math.floor(Math.random()*boostedSpots.length)]}
         if(selfDamageSpots.length){return selfDamageSpots[Math.floor(Math.random()*selfDamageSpots.length)]}
         if(protector.length && protector[0] && this.opponentBoard[protector[0]-1].cardName==undefined){return protector[0]-1}
@@ -3441,7 +3501,7 @@ export default{
           let oppNegativeI = null
           let playerPositiveI = null
           let playerNegativeI = null
-          let i
+          let i = null
           let opponentNonEngines = []
           for(let i = 0; i < this.opponentBoard.length; i++){
             if(this.opponentBoard[i].cardEffect != "Engine" && this.opponentBoard[i].cardEffect2 != "Engine"){
@@ -3515,7 +3575,7 @@ export default{
                   }
               }
         } 
-          console.log(this.filledOpponentBoardSpace)
+          console.log(`oppPos: ${oppPositiveI}, oppNeg: ${oppNegativeI}, playerPos: ${playerPositiveI}, playerNeg: ${playerNegativeI}, boardSpace: ${this.filledBoardSpace}`)
           if(oppPositiveI==null){oppPositiveI=this.filledOpponentBoardSpace[Math.floor(Math.random()*this.filledOpponentBoardSpace.length)]}
           if(oppNegativeI==null){oppNegativeI=this.filledOpponentBoardSpace[Math.floor(Math.random()*this.filledOpponentBoardSpace.length)]}
           if(playerPositiveI==null){playerPositiveI=this.filledBoardSpace[Math.floor(Math.random()*this.filledBoardSpace.length)]}
@@ -3554,19 +3614,23 @@ export default{
                       if(this.opponentBoard[i].statusses[0].duration && this.opponentBoard[i].statusses[0].duration>0){
                         duration = this.chosenEnemyCardStatusDuration + this.opponentBoard[i].statusses[0].duration}   
                       this.opponentBoard[i].statusses[0] = {status: this.chosenEnemyCardStatus, duration}
+                      if(this.chosenEnemyCardStatusDuration){duration = this.chosenEnemyCardStatusDuration}
                 } if(this.chosenEnemyCardStatus=="Adjacent Bleeding") {
                       i = oppNegativeI
                           if(this.opponentBoard[i].statusses[0].duration && this.opponentBoard[i].statusses[0].duration>0){
                             duration = this.chosenEnemyCardStatusDuration + this.opponentBoard[i].statusses[0].duration}   
                           this.opponentBoard[i].statusses[0] = {status: "Bleeding", duration}
+                          if(this.chosenEnemyCardStatusDuration){duration = this.chosenEnemyCardStatusDuration}
                         if(i!=0){if(this.opponentBoard[i-1].cardName) {
                           if(this.opponentBoard[i-1].statusses[0].duration && this.opponentBoard[i-1].statusses[0].duration>0){
                             duration = this.chosenEnemyCardStatusDuration + this.opponentBoard[i-1].statusses[0].duration}   
                           this.opponentBoard[i-1].statusses[0] = {status: "Bleeding", duration}
+                          if(this.chosenEnemyCardStatusDuration){duration = this.chosenEnemyCardStatusDuration}
                      }} if(i!=9){if(this.opponentBoard[i+1].cardName) {
                           if(this.opponentBoard[i+1].statusses[0].duration && this.opponentBoard[i+1].statusses[0].duration>0){
                             duration = this.chosenEnemyCardStatusDuration + this.opponentBoard[i+1].statusses[0].duration}   
                           this.opponentBoard[i+1].statusses[0] = {status: "Bleeding", duration}
+                          if(this.chosenEnemyCardStatusDuration){duration = this.chosenEnemyCardStatusDuration}
                      }}
                 } if(this.chosenEnemyCardStatus=="Vitality"){
                     i = oppPositiveI
@@ -3580,12 +3644,10 @@ export default{
                 this.opponentBoard[i].damageBondI = this.chosenEnemyCardIndex
             } if(this.chosenEnemyCardEffect=="Consume"){
                 i = oppNegativeI
-                this.opponentBoard[this.filledBoardSpace[this.filledBoardSpace.length-1]].cardHealth += this.opponentBoard[i].cardHealth
+                this.opponentBoard[this.filledOpponentBoardSpace[this.filledOpponentBoardSpace.length-1]].cardHealth += this.opponentBoard[i].cardHealth
                 if(this.spyI!=null) {this.playerBoard[this.spyI].cardHealth += this.opponentBoard[i].cardHealth}
                 if(this.spyI2!=null) {this.playerBoard[this.spyI2].cardHealth += this.opponentBoard[i].cardHealth}
-                //this.opponentGraveyard.push(this.opponentBoard[i])
                 this.opponentBoard[i].cardHealth=0
-                //this.filledBoardSpace.splice(this.filledBoardSpace.indexOf(i), 1);
             }
         } else if(this.chosenEnemyCardTargetType=="Enemy" && this.filledBoardSpace.length){
               if(this.chosenEnemyCardEffect=="Boost"){
@@ -3651,19 +3713,23 @@ export default{
                       if(this.playerBoard[i].statusses[0].duration && this.playerBoard[i].statusses[0].duration>0){
                         duration = this.chosenEnemyCardStatusDuration + this.playerBoard[i].statusses[0].duration}   
                       this.playerBoard[i].statusses[0] = {status: this.chosenEnemyCardStatus, duration}
+                      if(this.chosenEnemyCardStatusDuration){duration = this.chosenEnemyCardStatusDuration}
                 } if(this.chosenEnemyCardStatus=="Adjacent Bleeding") {
                       i = playerNegativeI
                       if(this.playerBoard[i].statusses[0].duration && this.playerBoard[i].statusses[0].duration>0){
                         duration = this.chosenEnemyCardStatusDuration + this.playerBoard[i].statusses[0].duration}   
                       this.playerBoard[i].statusses[0] = {status: "Bleeding", duration}
+                      if(this.chosenEnemyCardStatusDuration){duration = this.chosenEnemyCardStatusDuration}
                       if(i!=0){if(this.playerBoard[i-1].cardName) {
                         if(this.playerBoard[i-1].statusses[0].duration && this.playerBoard[i-1].statusses[0].duration>0){
                           duration = this.chosenEnemyCardStatusDuration + this.playerBoard[i-1].statusses[0].duration}   
                         this.playerBoard[i-1].statusses[0] = {status: "Bleeding", duration}
+                        if(this.chosenEnemyCardStatusDuration){duration = this.chosenEnemyCardStatusDuration}
                    }} if(i!=9){if(this.playerBoard[i+1].cardName) {
                         if(this.playerBoard[i+1].statusses[0].duration && this.playerBoard[i+1].statusses[0].duration>0){
                           duration = this.chosenEnemyCardStatusDuration + this.playerBoard[i+1].statusses[0].duration}   
                         this.playerBoard[i+1].statusses[0] = {status: "Bleeding", duration}
+                        if(this.chosenEnemyCardStatusDuration){duration = this.chosenEnemyCardStatusDuration}
                    }}
                 } if(this.chosenEnemyCardStatus=="Vitality"){
                     i = playerPositiveI
@@ -3674,7 +3740,7 @@ export default{
                   if(this.chosenEnemyCardStatus=="Freeze"){i = playerNegativeI; this.playerBoard[i].statusses[3] = {status: this.chosenEnemyCardStatus, duration: 999}}
        } else if(this.chosenEnemyCardEffect=="Trade Place"){
              i = playerPositiveI
-        if(this.playerBoard[i].cardEffect=="Engine"){
+        if(this.playerBoard[i].cardEffect=="Engine" || this.playerBoard[i].cardEffect2=="Engine"){
            if(this.chiefI==i){this.chiefI=null}
       else if(this.chiefI2==i){this.chiefI2=null}
            if(this.spyI==i){this.spyI=null}
@@ -3683,10 +3749,10 @@ export default{
       else if(this.playerBoard[i].cardEngineCondition=="Allied Unit Damaged"){this.oppChiefI=this.chosenEnemyCardIndex}
            if(this.playerBoard[i].cardEngineCondition=="Enemy Boosted" && this.oppSpyI!=null){this.oppSpyI2=this.chosenEnemyCardIndex}
       else if(this.playerBoard[i].cardEngineCondition=="Enemy Boosted"){this.oppSpyI=this.chosenEnemyCardIndex}
-           for(let o = 0; o < this.opponentEngines; o++){
-               if(this.opponentEngines[o][1]==i){
-                   let engine = this.opponentEngines.splice(o, 1);
-                   this.alliedEngines.push(engine)}
+           for(let o = 0; o < this.alliedEngines.length; o++){
+               if(this.alliedEngines[o][1]==i){
+                   let engine = this.alliedEngines.splice(o, 1);
+                   this.opponentEngines.push(engine)}
            }
        }
            let playerTrade = this.opponentBoard[this.chosenEnemyCardIndex]
@@ -3713,13 +3779,14 @@ export default{
                     } else {return "aaa"}
                     this.playerBoard[i].cardHealth = 0
             }} else if(this.chosenEnemyCardRemovalCondition=="Bleeding Enemy Health"){
+                    let i = null
                     let highestHP = 0
                     let removableUnits = []
                     for(let i = 0; i < this.playerBoard.length; i++){
-                      if(this.playerBoard[i].statusses[0].duration>0){
+                      if(this.playerBoard[i].statusses[0].duration){
                            removableUnits.push([this.playerBoard[i], i])
                       }}
-                    if(removableUnits.length>0){ 
+                    if(removableUnits.length){ 
                       for(let i = 0; i < removableUnits.length; i++){
                           if(removableUnits[i][0].cardHealth>highestHP){
                               highestHP = removableUnits[i][0].cardHealth
@@ -3741,31 +3808,22 @@ export default{
             if(this.alliedEngines[i][0].cardEngineCondition=="Number Of Enemy Units With Bleeding"){
                 let value = 0
                 for(let o = 0; o < 10; o++){
-                    if(this.opponentBoard[o].cardHealth){if(this.opponentBoard[o].statusses[0].status=="Bleeding"){value++}}
+                    if(this.opponentBoard[o].cardName!=null){if(this.opponentBoard[o].statusses[0].duration){value++}}
                 }
                 this.alliedEngines[i][0].cardHealth+=value
                 if(this.oppSpyI!=null) {this.opponentBoard[this.oppSpyI].cardHealth += value}
                 if(this.oppSpyI2!=null) {this.opponentBoard[this.oppSpyI2].cardHealth += value}
             }
-            if(this.alliedEngines[i][0].cardEngineCondition=="Enemy Has More Units"){
-                let playerLength = 0
-                let opponentLength = 0
-                for(let o = 0; o < 10; o++){if(this.playerBoard[o].cardName){playerLength++}}
-                for(let o = 0; o < 10; o++){if(this.opponentBoard[o].cardName){opponentLength++}}
-                if(playerLength >= opponentLength){
-                    pass=false
-                }
-            }
-            if(this.alliedEngines[i][0].cardEngineCondition=="Alone"){
-                if(this.filledBoardSpace.length==1){
+            if(this.alliedEngines[i][0].cardEngineCondition=="Outnumbered"){
+                if(this.filledBoardSpace.length<this.filledOpponentBoardSpace.length){
                     pass = true
                 } else {pass=false}
             }
-            if(this.alliedEngines[i][0].statusses[3].status=="Freeze"){pass=false}
+            if(this.alliedEngines[i][0].statusses[3].duration){pass=false}
             if(pass){
                 setTimeout(()=>{
                    if(this.alliedEngines[i][0].cardEngineTarget=="Self"){
-                if(this.alliedEngines[i][0].cardEngineType=="Damage"){
+                   if(this.alliedEngines[i][0].cardEngineType=="Damage"){
                     if(this.playerBoard[this.alliedEngines[i][1]].damageBondI){this.playerBoard[this.playerBoard[this.alliedEngines[i]].damageBondI].cardHealth -= this.alliedEngines[i][0].cardEngineValue}
                     else if(this.playerBoard[this.alliedEngines[i][1]].statusses[2].status=="Shield"){this.playerBoard[this.alliedEngines[i][1]].statusses[2]={}}
                     else {
@@ -4027,7 +4085,6 @@ export default{
                             if(this.opponentBoard[unitI].damageBondI) {this.opponentBoard[this.opponentBoard[unitI].damageBondI] -= this.alliedEngines[i][0].cardEngineValue2}
                             else if(this.opponentBoard[unitI].statusses[2].status=="Shield"){this.opponentBoard[unitI].statusses[2]={}}
                               else {
-                                  console.log(this.alliedEngines[i][0].cardEngineValue2)
                                 if(unitI!=9){if(this.opponentBoard[unitI+1].cardEffect!="Unkillable"){this.opponentBoard[unitI].cardHealth -= this.alliedEngines[i][0].cardEngineValue2}}
                                 else{this.opponentBoard[unitI].cardHealth -= this.alliedEngines[i][0].cardEngineValue2}
                                 if(this.opponentBoard[unitI].cardEngineCondition=="Damage Taken"){this.opponentBoard[unitI].cardEngineValue++}
@@ -4067,9 +4124,9 @@ export default{
                     pass = true
                 } else {pass=false}
             }
-            if(this.opponentEngines[i][0].statusses[3].status=="Freeze"){pass=false}
+            if(this.opponentEngines[i][0].statusses[3].duration){pass=false}
             if(pass){
-             //   setTimeout(()=>{
+                   setTimeout(()=>{
                    if(this.opponentEngines[i][0].cardEngineTarget=="Self"){
                 if(this.opponentEngines[i][0].cardEngineType=="Damage"){
                     if(this.opponentBoard[this.opponentEngines[i][1]].damageBondI){this.opponentBoard[this.opponentBoard[this.opponentEngines[i]].damageBondI].cardHealth -= this.opponentEngines[i][0].cardEngineValue}
@@ -4333,7 +4390,6 @@ export default{
                             if(this.playerBoard[unitI].damageBondI) {this.playerBoard[this.playerBoard[unitI].damageBondI] -= this.opponentEngines[i][0].cardEngineValue2}
                             else if(this.playerBoard[unitI].statusses[2].status=="Shield"){this.playerBoard[unitI].statusses[2]={}}
                               else {
-                              console.log(this.opponentEngines[i][0].cardEngineValue2)    
                               if(unitI!=9){if(this.opponentBoard[unitI+1].cardEffect!="Unkillable"){this.playerBoard[unitI].cardHealth -= this.opponentEngines[i][0].cardEngineValue2}}
                               else{this.playerBoard[unitI].cardHealth -= this.opponentEngines[i][0].cardEngineValue2}
                               if(this.playerBoard[unitI].cardEngineCondition=="Damage Taken"){this.playerBoard[unitI].cardEngineValue++}
@@ -4343,7 +4399,7 @@ export default{
                 }
                 if(this.opponentEngines[i][0].cardEngineCondition2=="Damage Taken" || this.opponentEngines[i][0].cardEngineCondition2=="Received Boost" || this.opponentEngines[i][0].cardEngineCondition2=="Allied Unit Damaged"){this.opponentEngines[i][0].cardEngineValue2=0}}
             }
-        //    }, 200)
+            }, 200)
           }}, 100)}
       },
       processStatus(){
@@ -4394,33 +4450,43 @@ export default{
           if(this.oppChiefI2!=null){if(this.opponentBoard[this.oppChiefI2].cardHealth<1){this.oppChiefI2=null}}
           if(this.oppSpyI!=null){if(this.opponentBoard[this.oppSpyI].cardHealth<1){this.oppSpyI=null}}
           if(this.oppSpyI2!=null){if(this.opponentBoard[this.oppSpyI2].cardHealth<1){this.oppSpyI2=null}}
-          for (let i = 0; i < this.filledBoardSpace.length; i++){
-              if(this.playerBoard[this.filledBoardSpace[i]].cardHealth<1) {
-                  if(this.playerBoard[this.filledBoardSpace[i]].cardEffect=="Engine"){
-                      for(let o = 0; o < this.alliedEngines.length; o++){
-                          if(this.alliedEngines[o][1]==this.filledBoardSpace[i]){
-                              this.alliedEngines.splice(o, 1)
-                          }
-                      }
-                  }
-                  this.playerGraveyard.push(this.playerBoard[this.filledBoardSpace[i]])
-                  this.playerBoard[this.filledBoardSpace[i]]={}
-                  this.filledBoardSpace.splice(i, 1);
-              }
+          for (let i = 0; i < 10; i++){
+            if(this.playerBoard[i].cardName!=undefined){
+                if(this.playerBoard[i].cardHealth<1) {
+                    if(this.playerBoard[i].cardEffect=="Engine"){
+                        for(let o = 0; o < this.alliedEngines.length; o++){
+                            if(this.alliedEngines[o][1]==i){
+                                this.alliedEngines.splice(o, 1)
+                            }
+                        }
+                    }
+                    this.playerGraveyard.push(this.playerBoard[i])
+                    this.playerBoard[i]={}
+                    for(let o = 0; o < this.filledBoardSpace.length; o++){
+                            if(this.filledBoardSpace[o]==i){
+                                this.filledBoardSpace.splice(o, 1)
+                            }
+                    }
+            }}
           }
-          for (let i = 0; i < this.filledOpponentBoardSpace.length; i++){
-              if(this.opponentBoard[this.filledOpponentBoardSpace[i]].cardHealth<1) {
-                  if(this.opponentBoard[this.filledOpponentBoardSpace[i]].cardEffect=="Engine"){
-                      for(let o = 0; o < this.opponentEngines.length; o++){
-                          if(this.opponentEngines[o][1]==this.filledOpponentBoardSpace[i]){
-                              this.opponentEngines.splice(o, 1)
-                          }
-                      }
-                  }
-                  this.opponentGraveyard.push(this.opponentBoard[this.filledOpponentBoardSpace[i]])
-                  this.opponentBoard[this.filledOpponentBoardSpace[i]]={}
-                  this.filledOpponentBoardSpace.splice(i, 1);
-              }
+          for (let i = 0; i < 10; i++){
+            if(this.opponentBoard[i].cardName!=undefined){
+                if(this.opponentBoard[i].cardHealth<1) {
+                    if(this.opponentBoard[i].cardEffect=="Engine"){
+                        for(let o = 0; o < this.opponentEngines.length; o++){
+                            if(this.opponentEngines[o][1]==i){
+                                this.opponentEngines.splice(o, 1)
+                            }
+                        }
+                    }
+                    this.opponentGraveyard.push(this.opponentBoard[i])
+                    this.opponentBoard[i]={}
+                    for(let o = 0; o < this.filledOpponentBoardSpace.length; o++){
+                            if(this.filledOpponentBoardSpace[o]==i){
+                                this.filledOpponentBoardSpace.splice(o, 1)
+                            }
+                    }
+            }}
           }
       },
       discardCard(){
@@ -4441,14 +4507,17 @@ export default{
         this.checkDeath();
       },
       discardEnemyCard(){
+        console.log("Enemy Discard")
         this.chosenEnemyPlayableCard.statusses = [{}, {}, {}, {}]
         this.opponentGraveyard.push(this.chosenEnemyPlayableCard);
         this.opponentHand[this.chosenEnemyPlayableCardIndex]={};
         this.chosenEnemyCard={};
-        this.chosenEnemyPlayableCard={};
+        this.chosenEnemyPlayableCard=null;
         this.showTutoredCard=false
       },
       checkRoundEnd(){
+          console.log("Checking round end")
+          if(this.playerPassed && !this.opponentPassed){this.startEnemyTurn()}
           if(this.playerPassed && this.opponentPassed){
               if(this.playerScore > this.opponentScore){
                   if(this.playerWonRound==true){this.playerWon=true}
@@ -4468,25 +4537,63 @@ export default{
               else{  
                 if(this.playerWon && this.opponentWon){this.gameResult="Draw"}
                 else if(this.playerWon){this.gameResult="Victory"}
-                else if(this.opponentWon){this.gameResult="Defeat"}
-                else{console.log("abra kadabra")}
+                else {this.gameResult="Defeat"}
           }}
       },
       startNewRound(){
           this.playerPassed = false;
           this.opponentPassed = false;
-          this.playerPlayed = false;
-          for(let i = 0; i < this.filledBoardSpace.length; i++){
-              this.playerGraveyard.push(this.playerBoard[this.filledBoardSpace[i]])
-          }
-          this.filledBoardSpace = [];
-          this.playerBoard = [{}, {}, {}, {}, {}, {}, {}, {}, {}, {}];
+          this.isEnemyTurn = true; 
+          this.playerPlayed = true;
           this.playerScore = 0;
-          let emptyHandSpots = [];
+          this.opponentScore = 0;
           for(let i = 0; i < 10; i++){
-              if(this.playerHand[i].cardName!=true){emptyHandSpots.push(i)}
+              if(this.playerBoard[i].cardName!=undefined){
+                if(this.playerBoard[i].cardEffect=="Engine"){
+                    for(let o = 0; o < this.alliedEngines.length; o++){
+                    if(this.alliedEngines[o][1]==i){
+                        this.alliedEngines.splice(o, 1)
+                    }
+                    }
+                }
+                this.playerGraveyard.push(this.playerBoard[i])
+                this.playerBoard[i]={}
+                for(let o = 0; o < this.filledBoardSpace.length; o++){
+                    if(this.filledBoardSpace[o]==i){
+                        this.filledBoardSpace.splice(o, 1)
+                    }
+                }
+              }
           }
-          console.log(emptyHandSpots)
+          for(let i = 0; i < 10; i++){
+              if(this.opponentBoard[i].cardName!=undefined){
+                    if(this.opponentBoard[i].cardEffect=="Engine"){
+                        for(let o = 0; o < this.opponentEngines.length; o++){
+                            if(this.opponentEngines[o][1]==i){
+                                this.opponentEngines.splice(o, 1)
+                            }
+                        }
+                    }
+                    this.opponentGraveyard.push(this.opponentBoard[i])
+                    this.opponentBoard[i]={}
+                    for(let o = 0; o < this.filledOpponentBoardSpace.length; o++){
+                        if(this.filledOpponentBoardSpace[o]==i){
+                            this.filledOpponentBoardSpace.splice(o, 1)
+                        }
+                    }
+            }
+          }
+          for(let i = 0; i < this.filledBoardSpace.length; i++){
+              console.log(`${this.playerBoard[this.filledBoardSpace[i]].cardName} health: ${this.playerBoard[this.filledBoardSpace[i]].cardHealth}`)
+          }
+          for(let i = 0; i < this.filledOpponentBoardSpace.length; i++){
+              console.log(`${this.opponentBoard[this.filledOpponentBoardSpace[i]].cardName} health: ${this.opponentBoard[this.filledOpponentBoardSpace[i]].cardHealth}`)
+          }
+          let emptyHandSpots = [];
+          let emptyOpponentHandSpots = [];
+          for(let i = 0; i < 10; i++){
+              if(this.playerHand[i].cardName==undefined){emptyHandSpots.push(i)}
+          }
           for(let i = 0; i < 2; i++){
               if(emptyHandSpots.length){  
                 let drawnCard = this.playerDeck.shift()
@@ -4538,20 +4645,12 @@ export default{
                 }}
                 emptyHandSpots.shift();
           }}
-          for(let i = 0; i < this.filledOpponentBoardSpace.length; i++){
-              this.opponentGraveyard.push(this.opponentBoard[this.filledOpponentBoardSpace[i]])
-          }
-          this.isEnemyTurn = false;
-          this.filledOpponentBoardSpace = [];
-          this.opponentBoard = [{}, {}, {}, {}, {}, {}, {}, {}, {}, {}];
-          this.opponentScore = 0;
-          let emptyOpponentHandSpots = [];
           for(let i = 0; i < 10; i++){
               if(this.opponentHand[i].cardName==undefined){emptyOpponentHandSpots.push(i)}
           }
           for(let i = 0; i < 2; i++){
               if(emptyOpponentHandSpots.length){  
-                let drawnCard = this.playerDeck.shift()
+                let drawnCard = this.opponentDeck.shift()
                 drawnCard.revealed1 = false
                 drawnCard.revealed2 = false
                 drawnCard.revealed3 = false
@@ -4599,12 +4698,136 @@ export default{
                         revealed: chosenRevealed,
                 }}
                 emptyOpponentHandSpots.shift();
-          }}
-          if(!this.playerStarts){this.isEnemyTurn = true; this.startEnemyTurn()}
+          }
+          }
+          this.spyI=null;
+          this.spyI2=null;
+          this.oppSpyI=null;
+          this.oppSpyI2=null;
+          this.chiefI=null;
+          this.chiefI2=null;
+          this.oppChiefI=null;
+          this.oppChiefI2=null;
+          this.alliedEngines=[];
+          this.opponentEngines=[];
+          this.filledBoardSpace=[];
+          this.filledOpponentBoardSpace=[];
+          console.log(`Player starts: ${this.playerStarts}`)
+          this.isRedrawPhase = true
+      },
+      confirmRedraw(){
+        for(let i = 0; i < this.redrawnCards.length; i++){
+            let drawnCard = this.playerDeck.shift()
+            drawnCard.revealed1 = false
+            drawnCard.revealed2 = false
+            drawnCard.revealed3 = false
+            drawnCard.revealed4 = false
+            if(drawnCard.revealedCount){drawnCard.revealedCount++}
+            else{drawnCard.revealedCount=1}
+            let chosenRevealed = null
+            if(drawnCard.revealedCount==1){chosenRevealed=drawnCard.revealed1}
+            else if(drawnCard.revealedCount==2){chosenRevealed=drawnCard.revealed2}
+            else if(drawnCard.revealedCount==3){chosenRevealed=drawnCard.revealed3}
+            else {chosenRevealed=drawnCard.revealed4}
+            this.playerDeck.splice(Math.floor(Math.random()*this.playerDeck.length), 0, this.playerHand[this.redrawnCards[i]]) 
+            this.playerHand[this.redrawnCards[i]] = {
+                    cardName: drawnCard.cardName,
+                    cardBaseHealth: drawnCard.cardBaseHealth,
+                    cardEffect: drawnCard.cardEffect,
+                    cardEffectCondition: drawnCard.cardEffectCondition,
+                    cardEffectTarget: drawnCard.cardEffectTarget,
+                    cardStatus: drawnCard.cardStatus,
+                    cardStatus2: drawnCard.cardStatus2,
+                    cardStatusDuration: drawnCard.cardStatusDuration,
+                    cardStatusDuration2: drawnCard.cardStatusDuration2,
+                    cardTargetUnitType: drawnCard.cardTargetUnitType,
+                    cardTargetUnitType2: drawnCard.cardTargetUnitType2,
+                    cardEffectValue: drawnCard.cardEffectValue,
+                    cardEffect2: drawnCard.cardEffect2,
+                    cardEffectTarget2: drawnCard.cardEffectTarget2,
+                    cardEffectValue2: drawnCard.cardEffectValue2,
+                    cardEngineType: drawnCard.cardEngineType,
+                    cardEngineTarget: drawnCard.cardEngineTarget,
+                    cardEngineValue: drawnCard.cardEngineValue,
+                    cardEngineCondition: drawnCard.cardEngineCondition,
+                    cardEngineType2: drawnCard.cardEngineType2,
+                    cardEngineTarget2: drawnCard.cardEngineTarget2,
+                    cardEngineValue2: drawnCard.cardEngineValue2,
+                    cardEngineCondition2: drawnCard.cardEngineCondition2,
+                    cardRandomness1: drawnCard.cardRandomness1,
+                    cardRandomness2: drawnCard.cardRandomness2,
+                    cardRemovalCondition: drawnCard.cardRemovalCondition,
+                    cardRemovalConditionValue: drawnCard.cardRemovalConditionValue,
+                    playedCard: drawnCard.playedCard,
+                    consumeType: drawnCard.consumeType,
+                    cardRarity: drawnCard.cardRarity,
+                    cardDescription: drawnCard.cardDescription,
+                    revealed: chosenRevealed,
+            }
+        }
+        let opponentRedrawnCards = []
+        for(let i = 0; i < 10; i++){
+            if(this.opponentHand[i].cardRarity=="Bronze"){opponentRedrawnCards.push(i)}
+            if(opponentRedrawnCards.length>1){break}
+        }
+        for(let i = 0; i < opponentRedrawnCards.length; i++){
+            let drawnCard = this.opponentDeck.shift()
+            drawnCard.revealed1 = false
+            drawnCard.revealed2 = false
+            drawnCard.revealed3 = false
+            drawnCard.revealed4 = false
+            if(drawnCard.revealedCount){drawnCard.revealedCount++}
+            else{drawnCard.revealedCount=1}
+            let chosenRevealed = null
+            if(drawnCard.revealedCount==1){chosenRevealed=drawnCard.revealed1}
+            else if(drawnCard.revealedCount==2){chosenRevealed=drawnCard.revealed2}
+            else if(drawnCard.revealedCount==3){chosenRevealed=drawnCard.revealed3}
+            else {chosenRevealed=drawnCard.revealed4}
+            this.opponentDeck.splice(Math.floor(Math.random()*this.opponentDeck.length), 0, this.opponentHand[opponentRedrawnCards[i]]) 
+            this.opponentHand[opponentRedrawnCards[i]] = {
+                    cardName: drawnCard.cardName,
+                    cardBaseHealth: drawnCard.cardBaseHealth,
+                    cardEffect: drawnCard.cardEffect,
+                    cardEffectCondition: drawnCard.cardEffectCondition,
+                    cardEffectTarget: drawnCard.cardEffectTarget,
+                    cardStatus: drawnCard.cardStatus,
+                    cardStatus2: drawnCard.cardStatus2,
+                    cardStatusDuration: drawnCard.cardStatusDuration,
+                    cardStatusDuration2: drawnCard.cardStatusDuration2,
+                    cardTargetUnitType: drawnCard.cardTargetUnitType,
+                    cardTargetUnitType2: drawnCard.cardTargetUnitType2,
+                    cardEffectValue: drawnCard.cardEffectValue,
+                    cardEffect2: drawnCard.cardEffect2,
+                    cardEffectTarget2: drawnCard.cardEffectTarget2,
+                    cardEffectValue2: drawnCard.cardEffectValue2,
+                    cardEngineType: drawnCard.cardEngineType,
+                    cardEngineTarget: drawnCard.cardEngineTarget,
+                    cardEngineValue: drawnCard.cardEngineValue,
+                    cardEngineCondition: drawnCard.cardEngineCondition,
+                    cardEngineType2: drawnCard.cardEngineType2,
+                    cardEngineTarget2: drawnCard.cardEngineTarget2,
+                    cardEngineValue2: drawnCard.cardEngineValue2,
+                    cardEngineCondition2: drawnCard.cardEngineCondition2,
+                    cardRandomness1: drawnCard.cardRandomness1,
+                    cardRandomness2: drawnCard.cardRandomness2,
+                    cardRemovalCondition: drawnCard.cardRemovalCondition,
+                    cardRemovalConditionValue: drawnCard.cardRemovalConditionValue,
+                    playedCard: drawnCard.playedCard,
+                    consumeType: drawnCard.consumeType,
+                    cardRarity: drawnCard.cardRarity,
+                    cardDescription: drawnCard.cardDescription,
+                    revealed: chosenRevealed,
+            }
+        }
+        this.isRedrawPhase = false
+        this.redrawnCards = []
+        this.chosenCard = {}
+        if(!this.playerStarts){this.isEnemyTurn = true; this.playerPlayed = true; console.log("Opponent went first"); this.startEnemyTurn()}
+        else{this.isEnemyTurn = false; this.playerPlayed = false}
       },
   }
 }
-// player can play cards in r2, game end card
+// 
 </script>
 
 <style>
